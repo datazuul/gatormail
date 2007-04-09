@@ -125,6 +125,10 @@ body {
     font-style:italic;
 }
 
+.gm-PlainTextView {
+    white-space:pre;
+}
+
 /* Evetything below here is from GWT's KitchSink demo. */
 .gwt-Tree {
 }

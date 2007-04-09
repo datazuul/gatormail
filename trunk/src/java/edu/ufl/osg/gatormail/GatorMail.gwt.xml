@@ -1,0 +1,21 @@
+<module>
+
+    <inherits name="com.google.gwt.user.User"/>
+
+    <!-- GWT-Stuff -->
+    <inherits name="org.mcarthur.sandy.gwt.event.list.EventList"/>
+    <inherits name="org.mcarthur.sandy.gwt.table.Table"/>
+    <inherits name="org.mcarthur.sandy.gwt.login.Login"/>
+    <inherits name="org.mcarthur.sandy.gwt.event.property.PropertyChange"/>
+
+    <!-- GWTx -->
+    <inherits name="com.googlecode.gwtx.Java"/>
+
+    <entry-point class="edu.ufl.osg.gatormail.client.GatorMail"/>
+
+    <servlet path="/login" class="edu.ufl.osg.gatormail.server.LoginServiceImpl"/>
+    <servlet path="/folders" class="edu.ufl.osg.gatormail.server.folderTree.FoldersServiceImpl"/>
+    <servlet path="/messageList" class="edu.ufl.osg.gatormail.server.messageList.MessageListServiceImpl"/>
+    <servlet path="/message" class="edu.ufl.osg.gatormail.server.MessageServiceImpl"/>
+
+</module>

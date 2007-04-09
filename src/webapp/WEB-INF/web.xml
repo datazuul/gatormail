@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" >
+    <description>AJAXified GatorMail</description>
+
+    <display-name>GatorMail 2</display-name>
+    <servlet>
+        <description>Logs user in</description>
+        <display-name>LoginService</display-name>
+        <servlet-name>LoginService</servlet-name>
+        <servlet-class>edu.ufl.osg.gatormail.server.LoginServiceImpl</servlet-class>
+    </servlet>
+    <servlet>
+        <description>Service to fetch Folder information</description>
+        <display-name>FoldersService</display-name>
+        <servlet-name>FoldersService</servlet-name>
+        <servlet-class>edu.ufl.osg.gatormail.server.folderTree.FoldersServiceImpl</servlet-class>
+    </servlet>
+    <servlet>
+        <display-name>MessageListService</display-name>
+        <servlet-name>MessageListService</servlet-name>
+        <servlet-class>edu.ufl.osg.gatormail.server.messageList.MessageListServiceImpl
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>edu.ufl.osg.gatormail.GatorMail MessageService</servlet-name>
+        <servlet-class>edu.ufl.osg.gatormail.server.MessageServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginService</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FoldersService</servlet-name>
+        <url-pattern>/folders</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MessageListService</servlet-name>
+        <url-pattern>/messageList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>edu.ufl.osg.gatormail.GatorMail MessageService</servlet-name>
+        <url-pattern>/message</url-pattern>
+    </servlet-mapping>
+</web-app>

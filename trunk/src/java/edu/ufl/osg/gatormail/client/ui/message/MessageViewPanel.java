@@ -46,6 +46,7 @@ public class MessageViewPanel extends Composite {
     private final GMMessage message;
 
     private final MessageViewHeadersPanel headers;
+    private final MessageBodyView bodyView;
 
     public MessageViewPanel(final GatorMailWidget client, final GMMessage message) {
         this.client = client;
@@ -69,6 +70,9 @@ public class MessageViewPanel extends Composite {
 
         headers = new MessageViewHeadersPanel(client, message);
         vp.add(headers);
+
+        bodyView = new MessageBodyView(message);
+        vp.add(bodyView);
 
         if (message.getHeaders() == null) {
             final MessageServiceAsync service = MessageService.App.getInstance();

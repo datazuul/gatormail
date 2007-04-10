@@ -22,52 +22,42 @@ package edu.ufl.osg.gatormail.client.ui.message.text;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
-import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 
 /**
- * View for {@link edu.ufl.osg.gatormail.client.model.message.text.GMPlain}.
+ * View for {@link edu.ufl.osg.gatormail.client.model.message.text.GMHtml}.
  *
  * @author Sandy McArthur
  */
-public class PlainTextView extends Composite {
-    // TODO: Provide a way to clamp width.
+public class HtmlPartView extends Composite {
     private final Label text = new Label();
-    private final TextPropertyChangeListener textPropertyChangeListener = new TextPropertyChangeListener();
 
-    private final GMPlain plain;
+    private final GMHtml html;
 
-    public PlainTextView(final GMPlain plain) {
-        this.plain = plain;
+
+    public HtmlPartView(final GMHtml html) {
+        this.html = html;
+
         initWidget(text);
-
-        addStyleName("gm-PlainTextView");
+        addStyleName("gm-HtmlPartView");
     }
 
 
     protected void onAttach() {
         super.onAttach();
 
-        plain.addPropertyChangeListener(textPropertyChangeListener);
+        // TODO: property change stuff
 
-        updateText();
+        updateHtml();
     }
 
     protected void onDetach() {
         super.onDetach();
-
-        plain.removePropertyChangeListener(textPropertyChangeListener);
     }
 
-    private void updateText() {
-        text.setText(plain.getPlain());
+    private void updateHtml() {
+        //text.setText(html.getHtml());
+        text.setText("HTML Cannot be securely rendered yet.");
     }
 
-    private class TextPropertyChangeListener implements PropertyChangeListener {
-        public void propertyChange(final PropertyChangeEvent evt) {
-            updateText();
-        }
-    }
 }

@@ -125,7 +125,12 @@ body {
     font-style:italic;
 }
 
-.gm-PlainTextView {
+/* Message View */
+.gm-MessageHeadersView {
+    background-color: #C3D9FF;    
+}
+
+.gm-PlainPartView {
     white-space:pre;
 }
 

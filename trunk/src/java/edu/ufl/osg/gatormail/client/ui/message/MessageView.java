@@ -20,16 +20,16 @@
 
 package edu.ufl.osg.gatormail.client.ui.message;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
@@ -39,26 +39,26 @@ import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
  *
  * @author Sandy McArthur
  */
-public class MessageViewPanel extends Composite {
+public class MessageView extends Composite {
     private final VerticalPanel vp = new VerticalPanel();
 
     private final GatorMailWidget client;
     private final GMMessage message;
 
-    private final MessageViewHeadersPanel headers;
+    private final MessageHeadersView headers;
     private final MessageBodyView bodyView;
 
-    public MessageViewPanel(final GatorMailWidget client, final GMMessage message) {
+    public MessageView(final GatorMailWidget client, final GMMessage message) {
         this.client = client;
         this.message = message;
 
         initWidget(vp);
-        addStyleName("gm-MessageViewPanel");
+        addStyleName("gm-MessageView");
         setWidth("100%");
 
         // Top bar
         final HorizontalPanel headerRow = new HorizontalPanel();
-        headerRow.addStyleName("gm-MessageViewPanel-HeaderRow");
+        headerRow.addStyleName("gm-MessageView-HeaderRow");
         headerRow.setWidth("100%");
 
         final SubjectLabel subjectLabel = new SubjectLabel(message);
@@ -68,7 +68,7 @@ public class MessageViewPanel extends Composite {
 
         vp.add(headerRow);
 
-        headers = new MessageViewHeadersPanel(client, message);
+        headers = new MessageHeadersView(client, message);
         vp.add(headers);
 
         bodyView = new MessageBodyView(message);

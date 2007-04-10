@@ -20,17 +20,20 @@
 
 package edu.ufl.osg.gatormail.client.ui.message;
 
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.ui.Widget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMParallel;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated;
+import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
+import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
+import edu.ufl.osg.gatormail.client.ui.message.multipart.AlternativePartView;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.MixedPartView;
-import edu.ufl.osg.gatormail.client.ui.message.text.PlainTextView;
+import edu.ufl.osg.gatormail.client.ui.message.text.HtmlPartView;
+import edu.ufl.osg.gatormail.client.ui.message.text.PlainPartView;
 
 /**
  * TODO: Write class JavaDoc.
@@ -46,20 +49,23 @@ public class PartViewFactory {
         if (part instanceof GMMixed) {
             final GMMixed mixed = (GMMixed)part;
 
-            /*
             if (part instanceof GMAlternative) {
-            } else if (part instanceof GMDigest) {
-            } else if (part instanceof GMParallel) {
+                return new AlternativePartView((GMAlternative)mixed);
+                
             } else if (part instanceof GMRelated) {
+            } else if (part instanceof GMDigest || part instanceof GMParallel) {
+                // digest and parallel are effectively identical to multipart/mixed when it comes to rendering.
+                return new MixedPartView(mixed);
             }
-            */
             /* GMMixed */
             if (!"edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed".equals(GWT.getTypeName(part))) {
-                GWT.log("Unexpected Message Part type: " + GWT.getTypeName(part), new RuntimeException(GWT.getTypeName(part)));
+                GWT.log("Unexpected Multipart Part type: " + GWT.getTypeName(part), new RuntimeException(GWT.getTypeName(part)));
             }
             return new MixedPartView(mixed);
         } else if (part instanceof GMPlain) {
-            return new PlainTextView((GMPlain)part);
+            return new PlainPartView((GMPlain)part);
+        } else if (part instanceof GMHtml) {
+            return new HtmlPartView((GMHtml)part);
         }
 
         GWT.log("Unexpected Message Part type: " + GWT.getTypeName(part), new RuntimeException(GWT.getTypeName(part)));

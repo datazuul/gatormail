@@ -20,8 +20,6 @@
 
 package edu.ufl.osg.gatormail.client.model.message.multipart;
 
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-
 /**
  * <code>multipart/related</code> part.
  *
@@ -32,4 +30,29 @@ public class GMRelated extends GMMixed {
     private String type;
     private String start;
     private String startInfo;
+
+
+    public String getStart() {
+        return start;
+    }
+
+    public void setStart(final String start) {
+        this.start = start;
+    }
+
+    public String getStartInfo() {
+        return startInfo;
+    }
+
+    public void setStartInfo(final String startInfo) {
+        this.startInfo = startInfo;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
+    }
 }

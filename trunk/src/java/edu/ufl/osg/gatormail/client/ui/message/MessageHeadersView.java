@@ -22,23 +22,23 @@ package edu.ufl.osg.gatormail.client.ui.message;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.GatorMailWidget;
+import edu.ufl.osg.gatormail.client.ui.BccAddressesLabel;
+import edu.ufl.osg.gatormail.client.ui.CcAddressesLabel;
 import edu.ufl.osg.gatormail.client.ui.FromAddressesLabel;
 import edu.ufl.osg.gatormail.client.ui.ToAddressesLabel;
-import edu.ufl.osg.gatormail.client.ui.CcAddressesLabel;
-import edu.ufl.osg.gatormail.client.ui.BccAddressesLabel;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Shows the headers of a message.
  *
  * @author Sandy McArthur
  */
-public class MessageViewHeadersPanel extends Composite {
+public class MessageHeadersView extends Composite {
 
     private final VerticalPanel vp = new VerticalPanel();
     private final PropertyChangeListener listener = new MessageHeadersPropertyChangeListener();
@@ -47,12 +47,12 @@ public class MessageViewHeadersPanel extends Composite {
     private final GMMessage message;
 
 
-    public MessageViewHeadersPanel(final GatorMailWidget client, final GMMessage message) {
+    public MessageHeadersView(final GatorMailWidget client, final GMMessage message) {
         this.client = client;
         this.message = message;
 
         initWidget(vp);
-        addStyleName("gm-MessageViewHeadersPanel");
+        addStyleName("gm-MessageHeadersView");
         setWidth("100%");
     }
 

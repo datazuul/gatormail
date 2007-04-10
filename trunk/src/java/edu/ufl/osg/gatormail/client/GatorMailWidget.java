@@ -20,37 +20,37 @@
 
 package edu.ufl.osg.gatormail.client;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.HistoryListener;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.HistoryListener;
-import com.google.gwt.user.client.History;
-import com.google.gwt.core.client.GWT;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMAddress;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.GMInternetAddress;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
+import edu.ufl.osg.gatormail.client.services.FoldersService;
+import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
 import edu.ufl.osg.gatormail.client.services.LoginService;
 import edu.ufl.osg.gatormail.client.services.LoginServiceAsync;
-import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
-import edu.ufl.osg.gatormail.client.services.FoldersService;
 import edu.ufl.osg.gatormail.client.ui.HeaderPanel;
 import edu.ufl.osg.gatormail.client.ui.NavPanel;
-import edu.ufl.osg.gatormail.client.ui.message.MessageViewPanel;
-import org.mcarthur.sandy.gwt.login.client.LoginPanel;
+import edu.ufl.osg.gatormail.client.ui.message.MessageView;
+import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
 import org.mcarthur.sandy.gwt.event.property.client.PropertyChangeSource;
+import org.mcarthur.sandy.gwt.login.client.LoginPanel;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Widget for the mail client.
@@ -205,11 +205,11 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
 
     private Map openMessages = new HashMap();
     public void openMessage(final GMMessage message) {
-        MessageViewPanel mvp = (MessageViewPanel)openMessages.get(message);
+        MessageView mvp = (MessageView)openMessages.get(message);
         if (mvp != null) {
             tabs.selectTab(tabs.getWidgetIndex(mvp));
         } else {
-            mvp = new MessageViewPanel(this, message);
+            mvp = new MessageView(this, message);
             openMessages.put(message, mvp);
             final String subject = message.getHeaders().getSubject();
             final String tabText = message.getHeaders() != null ? subject.substring(0, Math.min(25, subject.length())) : "A Message";

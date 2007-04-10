@@ -20,57 +20,55 @@
 
 package edu.ufl.osg.gatormail.server;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.client.rpc.SerializableException;
-import edu.ufl.osg.gatormail.client.services.MessageService;
-import edu.ufl.osg.gatormail.client.services.LoginService;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import edu.ufl.osg.gatormail.client.model.Account;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.model.UidValidityChangedException;
-import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMParallel;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated;
-import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
-import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 import edu.ufl.osg.gatormail.client.model.GMAddress;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.GMInternetAddress;
 import edu.ufl.osg.gatormail.client.model.GMNewsAddress;
+import edu.ufl.osg.gatormail.client.model.UidValidityChangedException;
 import edu.ufl.osg.gatormail.client.model.impl.GatorLinkAccount;
-
-import javax.mail.Folder;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.Authenticator;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Flags;
-import javax.mail.UIDFolder;
-import javax.mail.Message;
-import javax.mail.Address;
-import javax.mail.Part;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.NewsAddress;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import java.util.List;
-import java.util.Properties;
-import java.util.Iterator;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.StringWriter;
-
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
+import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMParallel;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated;
+import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
+import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
+import edu.ufl.osg.gatormail.client.services.LoginService;
+import edu.ufl.osg.gatormail.client.services.MessageService;
 import net.sf.classifier4J.summariser.ISummariser;
 import net.sf.classifier4J.summariser.SimpleSummariser;
+
+import javax.mail.Address;
+import javax.mail.Authenticator;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.UIDFolder;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.NewsAddress;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * TODO: Write class JavaDoc.
@@ -646,6 +644,10 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
 
             final GMRelated related = new GMRelated();
+
+            String contentType = part.getContentType();
+            //related.setStart(parseStart(contentType));
+            
             // TODO: Set: type, start, start-info
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
@@ -697,6 +699,22 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             return null;
         }
     }
+
+    /*
+    private static String parseStart(String type) {
+        if (type.toLowerCase().indexOf("start=\"") != -1) {
+            String typeLower = type.toLowerCase();
+            type = type.substring(typeLower.indexOf("start=\"") + "start=\"".length());
+            type = type.substring(0, type.indexOf('"'));
+            for (partNumber = multipart.getCount(); partNumber >= 0; partNumber--) {
+                if (type.equals(((MimeBodyPart)multipart.getBodyPart(partNumber)).getContentID())) {
+                    break;
+                }
+            }
+        }
+        return null;
+    }
+    */
 
     /*
     public static void main(String[] args) {

@@ -21,7 +21,8 @@
 package edu.ufl.osg.gatormail.client.ui.message;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.Label;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
@@ -40,7 +41,7 @@ import java.beans.PropertyChangeListener;
  */
 public class MessageHeadersView extends Composite {
 
-    private final VerticalPanel vp = new VerticalPanel();
+    private final Grid grid = new Grid();
     private final PropertyChangeListener listener = new MessageHeadersPropertyChangeListener();
 
     private final GatorMailWidget client;
@@ -51,7 +52,7 @@ public class MessageHeadersView extends Composite {
         this.client = client;
         this.message = message;
 
-        initWidget(vp);
+        initWidget(grid);
         addStyleName("gm-MessageHeadersView");
         setWidth("100%");
     }
@@ -72,20 +73,29 @@ public class MessageHeadersView extends Composite {
     }
 
     private void updateHeaders() {
-        vp.clear();
+        grid.resizeColumns(2);
+        int rows = 0;
         final GMMessageHeaders headers = message.getHeaders();
         if (headers != null) {
             if (headers.getFrom() != null) {
-                vp.add(new FromAddressesLabel(message));
+                if (grid.getRowCount() < ++rows) grid.resizeRows(rows);
+                grid.setWidget(rows-1, 0, new Label("From:"));
+                grid.setWidget(rows-1, 1, new FromAddressesLabel(message));
             }
             if (headers.getTo() != null) {
-                vp.add(new ToAddressesLabel(message));
+                if (grid.getRowCount() < ++rows) grid.resizeRows(rows);
+                grid.setWidget(rows-1, 0, new Label("To:"));
+                grid.setWidget(rows-1, 1, new ToAddressesLabel(message));
             }
             if (headers.getCc() != null) {
-                vp.add(new CcAddressesLabel(message));
+                if (grid.getRowCount() < ++rows) grid.resizeRows(rows);
+                grid.setWidget(rows-1, 0, new Label("CC:"));
+                grid.setWidget(rows-1, 1, new CcAddressesLabel(message));
             }
             if (headers.getBcc() != null) {
-                vp.add(new BccAddressesLabel(message));
+                if (grid.getRowCount() < ++rows) grid.resizeRows(rows);
+                grid.setWidget(rows-1, 0, new Label("BCC:"));
+                grid.setWidget(rows-1, 1, new BccAddressesLabel(message));
             }
             /*
             if (headers.getSentDate() != null) {

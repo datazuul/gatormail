@@ -212,7 +212,12 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
             mvp = new MessageView(this, message);
             openMessages.put(message, mvp);
             final String subject = message.getHeaders().getSubject();
-            final String tabText = message.getHeaders() != null ? subject.substring(0, Math.min(25, subject.length())) : "A Message";
+            final String tabText;
+            if (subject != null && subject.length() > 0) {
+                tabText = subject.substring(0, Math.min(25, subject.length()));                
+            } else {
+                tabText = "Message " + message.getUid();
+            }
             tabs.add(mvp, tabText); // TODO: make this smarter
             tabs.selectTab(tabs.getWidgetIndex(mvp));
         }

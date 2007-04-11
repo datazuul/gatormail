@@ -200,8 +200,6 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Message message = uidFolder.getMessageByUID(gmMessage.getUid());
 
                 part = convertMessageParts(message);
-                System.err.println("message.contentType: " + message.getContentType());
-                System.err.println("message.content.class: " + message.getContent().getClass());
 
             } catch (MessagingException e) {
                 throw new SerializableException("MessagingException message: " + gmMessage + ", reason: " + e.getMessage());
@@ -689,11 +687,15 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             convertedPart = new GMHtml((String)part.getContent());
 
         } else if (part.isMimeType("text/plain")) {
-            final GMPlain plain = new GMPlain((String)part.getContent());
-            final ContentType contentType = new ContentType(part.getContentType());
-            plain.setFormat(contentType.getParameter("format"));
-            convertedPart = plain;
-
+            try {
+                final String s = (String)part.getContent();
+                final GMPlain plain = new GMPlain(s);
+                final ContentType contentType = new ContentType(part.getContentType());
+                plain.setFormat(contentType.getParameter("format"));
+                convertedPart = plain;
+            } catch (IOException ioe) {
+                convertedPart = new GMPlain("Unable to convert: " + ioe.getMessage());
+            }
         } else if (part.isMimeType("text/*")) {
             System.err.println("Unexpected text/* mime type: " + part.getContentType());
             final Object o = part.getContent();

@@ -31,7 +31,6 @@ public class GMRelated extends GMMixed {
     private String start;
     private String startInfo;
 
-
     public String getStart() {
         return start;
     }

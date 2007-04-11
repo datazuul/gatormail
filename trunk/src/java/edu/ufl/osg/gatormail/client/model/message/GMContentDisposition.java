@@ -18,33 +18,42 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.model.message.text;
+package edu.ufl.osg.gatormail.client.model.message;
 
-import edu.ufl.osg.gatormail.client.model.message.GMPart;
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
- * <code>text/html</code> part.
+ * ContentDisposition.
  *
  * @author Sandy McArthur
- * @see <a href="http://www.rfc-editor.org/rfc/rfc2854.txt">RFC 2854</a>
  */
-public class GMHtml extends GMPart {
-    private String html;
+public final class GMContentDisposition implements IsSerializable {
 
-    public GMHtml() {
+    private String type;
+    private String filename;
+    private int size;
+
+    public String getFilename() {
+        return filename;
     }
 
-    public GMHtml(final String html) {
-        this.html = html;
+    public void setFilename(final String filename) {
+        this.filename = filename;
     }
 
-    public String getHtml() {
-        return html;
+    public int getSize() {
+        return size;
     }
 
-    public void setHtml(final String html) {
-        final Object old = getHtml();
-        this.html = html;
-        firePropertyChange("html", old, html);
+    public void setSize(final int size) {
+        this.size = size;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
     }
 }

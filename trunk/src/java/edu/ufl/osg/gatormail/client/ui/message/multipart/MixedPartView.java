@@ -23,12 +23,12 @@ package edu.ufl.osg.gatormail.client.ui.message.multipart;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
 import edu.ufl.osg.gatormail.client.ui.message.PartViewFactory;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 
 /**
@@ -69,7 +69,7 @@ public class MixedPartView extends Composite {
     protected void updatePart() {
         final Iterator iter = mixed.getParts().iterator();
         while (iter.hasNext()) {
-            final Widget w = PartViewFactory.loadView((GMMessagePart)iter.next());
+            final Widget w = PartViewFactory.loadView((GMPart)iter.next());
             vp.add(w);
         }
     }

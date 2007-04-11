@@ -20,16 +20,16 @@
 
 package edu.ufl.osg.gatormail.client.services;
 
-import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializableException;
-import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.core.client.GWT;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public interface MessageService extends RemoteService {
 
     public GMMessageHeaders fetchHeaders(Account account, GMMessage message) throws SerializableException;
     public GMMessageSummary fetchSummary(Account account, GMMessage message) throws SerializableException;
-    public GMMessagePart fetchMessageBody(Account account, GMMessage message) throws SerializableException;
+    public GMPart fetchMessageBody(Account account, GMMessage message) throws SerializableException;
 
     /**
      * @gwt.typeArgs messages <edu.ufl.osg.gatormail.client.model.message.GMMessage>

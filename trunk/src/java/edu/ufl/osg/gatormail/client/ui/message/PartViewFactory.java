@@ -22,7 +22,7 @@ package edu.ufl.osg.gatormail.client.ui.message;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
@@ -32,6 +32,7 @@ import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.AlternativePartView;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.MixedPartView;
+import edu.ufl.osg.gatormail.client.ui.message.multipart.RelatedPartView;
 import edu.ufl.osg.gatormail.client.ui.message.text.HtmlPartView;
 import edu.ufl.osg.gatormail.client.ui.message.text.PlainPartView;
 
@@ -45,7 +46,7 @@ public class PartViewFactory {
     private PartViewFactory() {
     }
 
-    public static Widget loadView(final GMMessagePart part) {
+    public static Widget loadView(final GMPart part) {
         if (part instanceof GMMixed) {
             final GMMixed mixed = (GMMixed)part;
 
@@ -53,6 +54,8 @@ public class PartViewFactory {
                 return new AlternativePartView((GMAlternative)mixed);
                 
             } else if (part instanceof GMRelated) {
+                return new RelatedPartView((GMRelated)part);
+
             } else if (part instanceof GMDigest || part instanceof GMParallel) {
                 // digest and parallel are effectively identical to multipart/mixed when it comes to rendering.
                 return new MixedPartView(mixed);
@@ -62,8 +65,10 @@ public class PartViewFactory {
                 GWT.log("Unexpected Multipart Part type: " + GWT.getTypeName(part), new RuntimeException(GWT.getTypeName(part)));
             }
             return new MixedPartView(mixed);
+
         } else if (part instanceof GMPlain) {
             return new PlainPartView((GMPlain)part);
+            
         } else if (part instanceof GMHtml) {
             return new HtmlPartView((GMHtml)part);
         }

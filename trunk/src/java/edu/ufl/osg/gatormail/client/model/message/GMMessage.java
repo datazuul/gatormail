@@ -21,15 +21,13 @@
 package edu.ufl.osg.gatormail.client.model.message;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import edu.ufl.osg.gatormail.client.model.GMFlags;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 import org.mcarthur.sandy.gwt.event.property.client.NamedPropertyChangeSource;
 
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-
-import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.model.GMFlags;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * GatorMail Message bean.
@@ -48,7 +46,7 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
     /**
      * This is too heavy weight to send of RPC willy nilly.
      */
-    private transient GMMessagePart part;
+    private transient GMPart part;
 
     /**
      * This is really a long but it is stored as a String to preserve the full accuracy.
@@ -129,11 +127,11 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
     }
 
 
-    public GMMessagePart getBody() {
+    public GMPart getBody() {
         return part;
     }
 
-    public void setBody(final GMMessagePart part) {
+    public void setBody(final GMPart part) {
         if (getBody() != null) {
             throw new IllegalStateException("Content must not be set twice.");
         }

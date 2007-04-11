@@ -27,12 +27,46 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * Base class for a GMMessage body part.
+ * Base class for a GMMessage part.
  *
  * @author Sandy McArthur
  */
-public abstract class GMMessagePart implements IsSerializable, PropertyChangeSource {
+public abstract class GMPart implements IsSerializable, PropertyChangeSource {
     private final transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    private String contentId;
+    private String description;
+    private GMContentDisposition disposition;
+
+    public String getContentId() {
+        return contentId;
+    }
+
+    public void setContentId(final String contentId) {
+        final Object old = getContentId();
+        this.contentId = contentId;
+        firePropertyChange("contentId", old, contentId);
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        final Object old = getDescription();
+        this.description = description;
+        firePropertyChange("description", old, description);
+    }
+
+    public GMContentDisposition getDisposition() {
+        return disposition;
+    }
+
+    public void setDisposition(final GMContentDisposition disposition) {
+        final Object old = getDisposition();
+        this.disposition = disposition;
+        firePropertyChange("disposition", old, disposition);
+    }
 
     protected final void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
         pcs.firePropertyChange(propertyName, oldValue, newValue);

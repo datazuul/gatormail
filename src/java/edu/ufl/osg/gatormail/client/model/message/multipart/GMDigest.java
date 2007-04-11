@@ -20,8 +20,6 @@
 
 package edu.ufl.osg.gatormail.client.model.message.multipart;
 
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
-
 /**
  * <code>multipart/digest</code> part.
  *

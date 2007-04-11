@@ -29,10 +29,12 @@ import edu.ufl.osg.gatormail.client.model.GMInternetAddress;
 import edu.ufl.osg.gatormail.client.model.GMNewsAddress;
 import edu.ufl.osg.gatormail.client.model.UidValidityChangedException;
 import edu.ufl.osg.gatormail.client.model.impl.GatorLinkAccount;
+import edu.ufl.osg.gatormail.client.model.message.GMContentDisposition;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
+import edu.ufl.osg.gatormail.client.model.message.message.GMRfc822;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
@@ -57,10 +59,14 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.UIDFolder;
+import javax.mail.internet.ContentDisposition;
+import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimePart;
 import javax.mail.internet.NewsAddress;
+import javax.mail.internet.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -164,11 +170,11 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         }
     }
 
-    public GMMessagePart fetchMessageBody(final Account account, final GMMessage gmMessage) throws SerializableException {
+    public GMPart fetchMessageBody(final Account account, final GMMessage gmMessage) throws SerializableException {
         final Session session = fetchSession(account);
         final Store store = fetchConnectedStore(session);
 
-        GMMessagePart part = null;
+        GMPart part = null;
         try {
             Folder folder = null;
             try {
@@ -596,9 +602,10 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return null;
     }
 
-    private static GMMessagePart convertMessageParts(final Part part) throws MessagingException, IOException {
+    private static GMPart convertMessageParts(final Part part) throws MessagingException, IOException {
         // TODO: image/*
         // TODO: audio/*
+        GMPart convertedPart = null;
         if (part.isMimeType("multipart/mixed")) {
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
 
@@ -607,7 +614,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Part p = mimeMultipart.getBodyPart(i);
                 mixed.addPart(convertMessageParts(p));
             }
-            return mixed;
+            convertedPart = mixed;
 
         } else if (part.isMimeType("multipart/alternative")) {
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
@@ -617,7 +624,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Part p = mimeMultipart.getBodyPart(i);
                 alternative.addPart(convertMessageParts(p));
             }
-            return alternative;
+            convertedPart = alternative;
 
         } else if (part.isMimeType("multipart/digest")) {
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
@@ -627,7 +634,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Part p = mimeMultipart.getBodyPart(i);
                 digest.addPart(convertMessageParts(p));
             }
-            return digest;
+            convertedPart = digest;
 
         } else if (part.isMimeType("multipart/parallel")) {
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
@@ -637,23 +644,25 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Part p = mimeMultipart.getBodyPart(i);
                 parallel.addPart(convertMessageParts(p));
             }
-            return parallel;
+            convertedPart = parallel;
 
         } else if (part.isMimeType("multipart/related")) {
-            System.err.println("multipart/related isn't fully supported yet!");
             final MimeMultipart mimeMultipart = (MimeMultipart)part.getContent();
 
             final GMRelated related = new GMRelated();
 
-            String contentType = part.getContentType();
-            //related.setStart(parseStart(contentType));
-            
-            // TODO: Set: type, start, start-info
+            final String type = part.getContentType();
+            if (type != null) {
+                final ContentType contentType = new ContentType(type);
+                related.setType(contentType.getParameter("type"));
+                related.setStart(contentType.getParameter("start"));
+                related.setStartInfo(contentType.getParameter("start-info"));
+            }
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
                 related.addPart(convertMessageParts(p));
             }
-            return related;
+            convertedPart = related;
 
         } else if (part.isMimeType("multipart/*")) {
             System.err.println("Unexpected multipart/* mime type: " + part.getContentType());
@@ -663,24 +672,34 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final Part p = mimeMultipart.getBodyPart(i);
                 mixed.addPart(convertMessageParts(p));
             }
-            return mixed;
+            convertedPart = mixed;
 
-        /* TODO: text/richtext
-        } else if (part.isMimeType("text/richtext")) {
-            return new GMRichText(part.getContent());
-        */
+        } else if (part.isMimeType("message/rfc822")) {
+            final GMRfc822 rfc822 = new GMRfc822();
+            // TODO: write me
+            //rfc822.setMessage();
+            //rfc822.setPart(convertMessageParts());
+            convertedPart = rfc822;
+
+            /* TODO: text/richtext
+            } else if (part.isMimeType("text/richtext")) {
+                convertedPart = new GMRichText(part.getContent());
+            */
         } else if (part.isMimeType("text/html")) {
-            return new GMHtml((String)part.getContent());
+            convertedPart = new GMHtml((String)part.getContent());
 
         } else if (part.isMimeType("text/plain")) {
-            return new GMPlain((String)part.getContent());
+            final GMPlain plain = new GMPlain((String)part.getContent());
+            final ContentType contentType = new ContentType(part.getContentType());
+            plain.setFormat(contentType.getParameter("format"));
+            convertedPart = plain;
 
         } else if (part.isMimeType("text/*")) {
             System.err.println("Unexpected text/* mime type: " + part.getContentType());
             final Object o = part.getContent();
             if (o instanceof String) {
                 final String s = (String)o;
-                return new GMPlain(s);
+                convertedPart = new GMPlain(s);
             } else if (o instanceof InputStream) {
                 final InputStream inputStream = (InputStream)o;
                 final StringWriter sw = new StringWriter(inputStream.available());
@@ -688,16 +707,31 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 while ((b = inputStream.read()) >= 0) {
                     sw.write(b);
                 }
-                return new GMPlain(sw.toString());
+                convertedPart = new GMPlain(sw.toString());
             } else {
                 System.err.println("How do I really convert: " + (o != null ? o.getClass() : null) + " to a String?");
-                return new GMPlain("" + o);
+                convertedPart = new GMPlain("" + o);
             }
-
+        }
+        if (convertedPart != null) {
+            convertedPart.setDescription(part.getDescription());
+            final String disposition = part.getDisposition();
+            if (disposition != null) {
+                final ContentDisposition cd = new ContentDisposition(disposition);
+                final GMContentDisposition gmContentDisposition = new GMContentDisposition();
+                gmContentDisposition.setType(cd.getDisposition());
+                gmContentDisposition.setFilename(cd.getParameter("filename"));
+                gmContentDisposition.setSize(Integer.parseInt(cd.getParameter("size")));
+                convertedPart.setDisposition(gmContentDisposition);
+            }
+            if (part instanceof MimePart) {
+                final MimePart mimePart = (MimePart)part;
+                convertedPart.setContentId(mimePart.getContentID());
+            }
         } else {
             System.err.println("Unexpected mime type: " + part.getContentType());
-            return null;
         }
+        return convertedPart;
     }
 
     /*
@@ -743,4 +777,18 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         System.out.println("-----");
     }
     */
+
+    public static void main(String[] args) throws ParseException {
+        ContentType ct = new ContentType("Multipart/Related; boundary=example-1;\n" +
+                "             start=\"<950120.aaCC@XIson.com>\";\n" +
+                "             type=\"Application/X-FixedRecord\";\n" +
+                "             start-info=\"-o ps\"");
+        System.out.println("BaseType: " + ct.getBaseType());
+        System.out.println("PrimaryType: " + ct.getPrimaryType());
+        System.out.println("SubType: " + ct.getSubType());
+        System.out.println("ParameterList: " + ct.getParameterList());
+        System.out.println("type: " + ct.getParameter("type"));
+        System.out.println("start: " + ct.getParameter("start"));
+        System.out.println("start-info: " + ct.getParameter("start-info"));
+    }
 }

@@ -20,7 +20,7 @@
 
 package edu.ufl.osg.gatormail.client.model.message.text;
 
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
 /**
  * <code>text/plain</code> part.
@@ -29,15 +29,29 @@ import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
  * @see <a href="http://www.rfc-editor.org/rfc/rfc2046.txt">RFC 2046</a>
  * @see <a href="http://www.rfc-editor.org/rfc/rfc3676.txt">RFC 3676</a>
  */
-public class GMPlain extends GMMessagePart {
+public class GMPlain extends GMPart {
     private String plain;
-
+    private String format;
 
     public GMPlain() {
     }
 
     public GMPlain(final String plain) {
         this.plain = plain;
+    }
+
+    public boolean isFlowed() {
+        return "flowed".equalsIgnoreCase(getFormat());
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(final String format) {
+        final Object old = getFormat();
+        this.format = format;
+        firePropertyChange("format", old, format);
     }
 
     public String getPlain() {

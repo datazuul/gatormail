@@ -20,11 +20,11 @@
 
 package edu.ufl.osg.gatormail.client.model.message.multipart;
 
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * <code>multipart/mixed</code> part.
@@ -40,10 +40,10 @@ import java.util.Collections;
  * @see <a href="http://www.rfc-editor.org/rfc/rfc2045.txt">RFC 2045</a>
  * @see <a href="http://www.rfc-editor.org/rfc/rfc2046.txt">RFC 2046</a>
  */
-public class GMMixed extends GMMessagePart {
+public class GMMixed extends GMPart {
     private List parts;
 
-    public void addPart(final GMMessagePart part) {
+    public void addPart(final GMPart part) {
         if (parts == null) {
             parts = new ArrayList();
         }

@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
@@ -90,7 +90,7 @@ public class MessageView extends Composite {
             final MessageServiceAsync service = MessageService.App.getInstance();
             service.fetchMessageBody(client.getAccount(), message, new AsyncCallback() {
                 public void onSuccess(final Object result) {
-                    message.setBody((GMMessagePart)result);
+                    message.setBody((GMPart)result);
                 }
                 public void onFailure(final Throwable caught) {
                     GWT.log("Problem fetching Body", caught);

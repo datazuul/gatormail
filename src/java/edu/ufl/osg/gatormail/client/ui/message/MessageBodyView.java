@@ -21,14 +21,13 @@
 package edu.ufl.osg.gatormail.client.ui.message;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.model.message.GMMessagePart;
+import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Base widget to render a message body.
@@ -65,7 +64,7 @@ public class MessageBodyView extends Composite {
     }
 
     private void updateBody() {
-        final GMMessagePart body = message.getBody();
+        final GMPart body = message.getBody();
         if (body != null) {
             final Widget w = PartViewFactory.loadView(body);
             sp.setWidget(w);

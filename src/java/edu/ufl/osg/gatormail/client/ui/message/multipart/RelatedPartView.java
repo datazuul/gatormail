@@ -24,30 +24,28 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import edu.ufl.osg.gatormail.client.model.message.GMPart;
-import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
+import edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated;
 import edu.ufl.osg.gatormail.client.ui.message.PartViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * View for {@link edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative}.
+ * View for {@link edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated}.
  *
  * @author Sandy McArthur
  */
-public class AlternativePartView extends Composite {
+public class RelatedPartView extends Composite {
     private final SimplePanel sp = new SimplePanel();
 
-    private final GMAlternative alternative;
+    private final GMRelated related;
 
 
-    public AlternativePartView(final GMAlternative alternative) {
-        this.alternative = alternative;
+    public RelatedPartView(final GMRelated related) {
+        this.related = related;
 
         initWidget(sp);
-        addStyleName("gm-AlternativePartView");
     }
-
 
     protected void onAttach() {
         super.onAttach();
@@ -61,16 +59,23 @@ public class AlternativePartView extends Composite {
 
     private void updatePart() {
         // TODO: convert to use list iterator with GWT 1.4
-        final List parts = new ArrayList(alternative.getParts());
-        
-        for (int i=parts.size()-1; i >=0; i--) {
-            final GMPart part = (GMPart)parts.get(i);
+        final List parts = new ArrayList(related.getParts());
 
-            final Widget view = PartViewFactory.loadView(part);
-            if (view != null) {
-                sp.setWidget(view);
-                return;
+        String cid = related.getContentId();
+
+        if (cid != null) {
+            for (int i=parts.size()-1; i >=0; i--) {
+                final GMPart part = (GMPart)parts.get(i);
+
+                if (cid.equals(part.getContentId())) {
+                    final Widget view = PartViewFactory.loadView(part);
+                    sp.setWidget(view);
+                    return;
+                }
             }
         }
+
+        // If no cid missing or doesn't match, use first part
+        sp.setWidget(PartViewFactory.loadView((GMPart)parts.get(0)));
     }
 }

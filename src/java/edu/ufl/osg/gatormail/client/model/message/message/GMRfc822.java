@@ -18,33 +18,34 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.model.message.text;
+package edu.ufl.osg.gatormail.client.model.message.message;
 
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
 /**
- * <code>text/html</code> part.
+ * <code>message/rfc822</code> part.
  *
  * @author Sandy McArthur
- * @see <a href="http://www.rfc-editor.org/rfc/rfc2854.txt">RFC 2854</a>
  */
-public class GMHtml extends GMPart {
-    private String html;
+public class GMRfc822 extends GMPart {
+    private GMMessage message;
+    private GMPart part;
 
-    public GMHtml() {
+    public GMMessage getMessage() {
+        if (message != null && message.getBody() != part) {
+            message.setBody(part);
+        }
+        return message;
     }
 
-    public GMHtml(final String html) {
-        this.html = html;
+    public void setMessage(final GMMessage message) {
+        final Object old = getMessage();
+        this.message = message;
+        firePropertyChange("message", old, message);
     }
 
-    public String getHtml() {
-        return html;
-    }
-
-    public void setHtml(final String html) {
-        final Object old = getHtml();
-        this.html = html;
-        firePropertyChange("html", old, html);
+    public void setPart(final GMPart part) {
+        this.part = part;
     }
 }

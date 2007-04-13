@@ -270,6 +270,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                     }
 
                     final Message messageToDelete = uidFolder.getMessageByUID(message.getUid());
+                    // TODO: throw an MessagingException to simulate a couldn't move to trash exception and deal with it nicely.
                     folder.copyMessages(new Message[] {messageToDelete}, trashFolder);
 
                     messageToDelete.setFlag(Flags.Flag.DELETED, true);

@@ -47,11 +47,6 @@ import edu.ufl.osg.gatormail.client.services.MessageService;
 import net.sf.classifier4J.summariser.ISummariser;
 import net.sf.classifier4J.summariser.SimpleSummariser;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Flags;
@@ -72,19 +67,13 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import javax.mail.internet.NewsAddress;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 
 /**
  * TODO: Write class JavaDoc.
@@ -747,125 +736,6 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return convertedPart;
     }
 
-    private static byte[] salt = null;
-    private static byte[] getSalt() {
-        if (salt == null) {
-            final String gmSalt = System.getProperty("gm.salt");
-            if (gmSalt != null) {
-                salt = gmSalt.getBytes();
-            } else {
-                System.err.println("INFO: gm.salt system property not set.");
-                System.err.println("INFO: Generating new salt. Attachment links will not work across server restarts.");
-                final Random r = new Random();
-                final int size = 8;
-                final byte[] salt = new byte[size];
-                r.nextBytes(salt);
-                MessageServiceImpl.salt = salt;
-            }
-        }
-        return salt.clone();
-    }
-    
-    private static int saltCount = -1;
-    private static int getIterationCount() {
-        if (saltCount < 0) {
-            final String gmCount = System.getProperty("gm.count");
-            if (gmCount != null) {
-                try {
-                    saltCount = Integer.parseInt(gmCount);
-                } catch (NumberFormatException nfe) {
-                    System.err.println("INFO: gm.count property is not a parsable number: " + gmCount);
-                    nfe.printStackTrace();
-                }
-            }
-            if (saltCount < 0) {
-                System.err.println("INFO: gm.count system property not set.");
-                System.err.println("INFO: Generating new count. Attachment links will not work across server restarts.");
-                saltCount = (int)(Math.random() * 25) + 8;
-            }
-        }
-        return saltCount;
-    }
-
-    private static char[] password = null;
-    private static char[] getPassword() {
-        if (password == null) {
-            final String gmPassword = System.getProperty("gm.password");
-            if (gmPassword != null) {
-                password = gmPassword.toCharArray();
-            } else {
-                System.err.println("INFO: gm.password system property not set.");
-                System.err.println("INFO: Generating new password. Attachment links will not work across server restarts.");
-                final Random r = new Random();
-                final int size = r.nextInt(4) + 8;
-                final char[] password = new char[size];
-                for (int i=0; i < password.length; i++) {
-                    password[i] = (char)(r.nextInt(94) + 32); // needs to be in the ascii range
-                }
-                MessageServiceImpl.password = password;
-            }
-        }
-        return password;
-    }
-
-    private static final int BASE64_OPTIONS = Base64.DONT_BREAK_LINES | Base64.URL_SAFE;
-
-    private static String encodeInfo(final Serializable obj) {
-        final byte[] salt = getSalt();
-        final int count = getIterationCount();
-        final PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, count);
-        final PBEKeySpec pbeKeySpec = new PBEKeySpec(getPassword());
-        try {
-            final SecretKeyFactory keyFac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-            final SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec);
-
-            // Create PBE Cipher
-            final Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
-
-            // Initialize PBE Cipher with key and parameters
-            pbeCipher.init(Cipher.ENCRYPT_MODE, pbeKey, pbeParamSpec);
-
-            // Our cleartext
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(obj);
-            oos.close();
-            final byte[] cleartext = baos.toByteArray();
-
-            // Encrypt the cleartext
-            final byte[] ciphertext = pbeCipher.doFinal(cleartext);
-
-
-            return Base64.encodeBytes(ciphertext, BASE64_OPTIONS);
-        } catch (Exception e) {
-            throw new RuntimeException("Problem encrypting stuff", e);
-        }
-    }
-    private static Object decodeInfo(final String urlSafeBase64) {
-        final byte[] salt = getSalt();
-        final int count = getIterationCount();
-        final PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, count);
-        final PBEKeySpec pbeKeySpec = new PBEKeySpec(getPassword());
-        try {
-            final SecretKeyFactory keyFac = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
-            final SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec);
-
-            // Create PBE Cipher
-            final Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
-
-            // Initialize PBE Cipher with key and parameters
-            pbeCipher.init(Cipher.DECRYPT_MODE, pbeKey, pbeParamSpec);
-
-            final byte[] ciphertext = Base64.decode(urlSafeBase64, BASE64_OPTIONS);
-
-            final byte[] cleartext = pbeCipher.doFinal(ciphertext);
-
-            final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(cleartext));
-            return ois.readObject();
-        } catch (Exception e) {
-            throw new RuntimeException("Problem dencrypting stuff", e);
-        }
-    }
     /*
     private static String parseStart(String type) {
         if (type.toLowerCase().indexOf("start=\"") != -1) {
@@ -910,29 +780,4 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
     }
     */
 
-    public static void main(final String[] args) throws Exception {
-        final Foo foo = new Foo();
-        final String c = encodeInfo(foo);
-        System.out.println("c.length: " + c.length());
-        System.out.println("c: " + c);
-        System.out.println("Before: " + foo);
-        final Object bar = decodeInfo(c);
-        System.out.println(" After: " + bar);
-    }
-
-    private static class Foo implements Serializable {
-        private String username = "12345678" + Math.random();
-        private String password = "87654321" + Math.random();
-        private String folder = "INBOX" + Math.random();
-        private String message = "cid124e3463456536t34" + Math.random();
-
-        public String toString() {
-            return "Foo{" +
-                    "folder='" + folder + '\'' +
-                    ", username='" + username + '\'' +
-                    ", password='" + password + '\'' +
-                    ", message='" + message + '\'' +
-                    '}';
-        }
-    }
 }

@@ -7,6 +7,13 @@
 
     <display-name>GatorMail 2</display-name>
     <servlet>
+        <description>Initializes Webapp encryption state</description>
+        <display-name>PrivateStateEncoderServlet</display-name>
+        <servlet-name>PrivateStateEncoderServlet</servlet-name>
+        <servlet-class>edu.ufl.osg.gatormail.server.state.DefaultPrivateStateEncoderServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
         <description>Logs user in</description>
         <display-name>LoginService</display-name>
         <servlet-name>LoginService</servlet-name>

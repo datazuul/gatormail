@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.server;
+package edu.ufl.osg.gatormail.server.state;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>

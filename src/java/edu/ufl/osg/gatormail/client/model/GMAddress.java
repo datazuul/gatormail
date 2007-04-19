@@ -23,7 +23,7 @@ package edu.ufl.osg.gatormail.client.model;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
- * TODO: Write Class JavaDoc
+ * Client mode bean for a JavaMail Address.
  *
  * @author Sandy McArthur
  */

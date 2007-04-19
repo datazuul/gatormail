@@ -20,13 +20,13 @@
 
 package edu.ufl.osg.gatormail.client.ui;
 
-import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 
 import java.util.Date;
 
 /**
- * TODO: Write Class JavaDoc
+ * Date of when a message was received.
  *
  * @author Sandy McArthur
  */

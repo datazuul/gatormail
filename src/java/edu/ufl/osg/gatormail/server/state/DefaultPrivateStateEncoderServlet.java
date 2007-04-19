@@ -45,7 +45,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
 
 /**
- * TODO: Write class JavaDoc.
+ * Servlet that intializes the webapp's {@link edu.ufl.osg.gatormail.server.state.PrivateStateCipher}.
  *
  * @author Sandy McArthur
  */
@@ -55,6 +55,7 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
 
     public void init(final ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
+
         final DefaultPrivateStateCipher dpsc = new DefaultPrivateStateCipher(getSalt(servletConfig), getIterationCount(servletConfig), getPassword(servletConfig));
 
         // test to make sure the current settings work
@@ -72,8 +73,13 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
             log("Problem with the encryption paramters.", e);
             throw new ServletException("Problem with the encryption paramters.", e);
 
+        } catch (ServletException se) {
+            // no need to wrap this
+            throw se;
+
         } catch (Exception e) {
             // other shouldn't ever happen here
+            log(e.getMessage(), e);
             throw new ServletException(e.getMessage(), e);
         }
     }
@@ -87,8 +93,7 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
         if (gmSalt != null) {
             salt = gmSalt.getBytes();
         } else {
-            log("INFO: gm.salt property not set.");
-            log("INFO: Generating new salt. Attachment links will not work across server restarts.");
+            log("INFO: gm.salt property not set. Generating new salt. Attachment links will not work across server restarts.");
             final Random r = new Random();
             final int size = 8;
             salt = new byte[size];
@@ -110,8 +115,7 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
             }
         }
         if (saltCount < 0) {
-            log("INFO: gm.count property not set.");
-            log("INFO: Generating new count. Attachment links will not work across server restarts.");
+            log("INFO: gm.count property not set. Generating new count. Attachment links will not work across server restarts.");
             saltCount = (int)(Math.random() * 25) + 8;
         }
         return saltCount;
@@ -125,8 +129,7 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
         if (gmPassword != null) {
             password = gmPassword.toCharArray();
         } else {
-            log("INFO: gm.password property not set.");
-            log("INFO: Generating new password. Attachment links will not work across server restarts.");
+            log("INFO: gm.password property not set. Generating new password. Attachment links will not work across server restarts.");
             final Random r = new Random();
             final int size = r.nextInt(4) + 8;
             password = new char[size];
@@ -236,6 +239,28 @@ public class DefaultPrivateStateEncoderServlet extends HttpServlet {
         private String password = "87654321" + Math.random();
         private String folder = "INBOX" + Math.random();
         private String message = "cid124e3463456536t34" + Math.random();
+
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final TestObject that = (TestObject)o;
+
+            if (!folder.equals(that.folder)) return false;
+            if (!message.equals(that.message)) return false;
+            if (!password.equals(that.password)) return false;
+            return username.equals(that.username);
+
+        }
+
+        public int hashCode() {
+            int result;
+            result = username.hashCode();
+            result = 31 * result + password.hashCode();
+            result = 31 * result + folder.hashCode();
+            result = 31 * result + message.hashCode();
+            return result;
+        }
 
         public String toString() {
             return "TestObject{" +

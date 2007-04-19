@@ -13,7 +13,7 @@
 
     <entry-point class="edu.ufl.osg.gatormail.client.GatorMail"/>
 
-    <servlet path="/dummyPathBecauseThisDoesNotServeRequest" class="edu.ufl.osg.gatormail.server.state.DefaultPrivateStateEncoderServlet"/>
+    <servlet path="/dummyPathBecauseHostedShellDoesNotProvideFullServletConfig" class="edu.ufl.osg.gatormail.server.state.DefaultPrivateStateEncoderServlet"/>
     <servlet path="/login" class="edu.ufl.osg.gatormail.server.LoginServiceImpl"/>
     <servlet path="/folders" class="edu.ufl.osg.gatormail.server.folderTree.FoldersServiceImpl"/>
     <servlet path="/messageList" class="edu.ufl.osg.gatormail.server.messageList.MessageListServiceImpl"/>

@@ -22,9 +22,10 @@ package edu.ufl.osg.gatormail.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.impl.GatorLinkAccount;
+import edu.ufl.osg.gatormail.client.services.LoginService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.mail.Authenticator;
 import javax.mail.Folder;
 import javax.mail.MessagingException;
@@ -32,11 +33,9 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.Properties;
-
-import edu.ufl.osg.gatormail.client.services.LoginService;
-import edu.ufl.osg.gatormail.client.model.Account;
-import edu.ufl.osg.gatormail.client.model.impl.GatorLinkAccount;
 
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
 
@@ -100,19 +99,14 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         final Folder folder;
         try {
             folder = store.getFolder("INBOX");
-            //folder = store.getDefaultFolder();
-            //System.err.println(folder.getURLName().toString());
-            //System.err.println(Arrays.asList(folder.list("*")));
         } catch (MessagingException e) {
             throw new LoginException(e.getMessage(), e);
         } catch (Exception e) {
             throw new LoginException(e.getMessage(), e);
         }
-        httpSession.setAttribute("javamail.store", store); // XXX: maybe key off of URLName?
 
-        final int messageCount;
         try {
-            messageCount = folder.getMessageCount();
+            folder.getMessageCount();
         } catch (MessagingException e) {
             throw new LoginException(e.getMessage(), e);
         } catch (Exception e) {

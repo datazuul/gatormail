@@ -25,7 +25,7 @@ body {
 }
 
 /* Message List Panel Folder Name */
-.gm-MessageList-FolderName {
+.gm-MessageList-HeaderRow .gm-MessageList-FolderName {
     font-size: larger;
     padding: 0.5ex;
 }
@@ -126,8 +126,13 @@ body {
 }
 
 /* Message View */
+.gm-MessageView-HeaderRow .gm-SubjectLabel {
+    font-size: larger;
+    padding: 0.5ex;
+}
+
 .gm-MessageHeadersView {
-    background-color: #C3D9FF;    
+    background-color: #C3D9FF;
 }
 
 .gm-PlainPartView {

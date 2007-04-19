@@ -22,16 +22,16 @@ package edu.ufl.osg.gatormail.client.ui;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.ui.FolderHyperlink;
-import edu.ufl.osg.gatormail.client.GatorMailWidget;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
- * TODO: Write class JavaDoc.
+ * Nav links for the main folders in a mailbox.
+ * Mainly: INBOX, Drafts, Junk, Sent, and Trash.
  *
  * @author sandymac
  */

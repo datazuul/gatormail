@@ -20,11 +20,6 @@
 
 package edu.ufl.osg.gatormail.client.model;
 
-/**
- * TODO: Write Class JavaDoc
- *
- * @author Sandy McArthur
- */
 public class ImapId extends MailId {
     private String folder;
     private int uidValidity = -1;

@@ -23,10 +23,9 @@ package edu.ufl.osg.gatormail.client.model;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
- * TODO: Write Class JavaDoc
+ * Client mode bean for a JavaMail InternetAddress.
  *
  * @author Sandy McArthur
- * @since Sep 28, 2006 4:19:14 PM
  */
 public class GMInternetAddress extends GMAddress implements IsSerializable {
     private String address;

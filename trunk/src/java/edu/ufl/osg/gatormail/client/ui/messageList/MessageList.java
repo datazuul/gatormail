@@ -25,8 +25,8 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ClickListener;
@@ -87,10 +87,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO: Write Class JavaDoc
+ * Display a list of messages in a folder.
  *
  * @author Sandy McArthur
- * @since Sep 28, 2006 3:04:16 PM
  */
 public class MessageList extends Composite {
     private static final Command NOT_IMPLEMENTED_COMMAND = new NotImplementedCommand();

@@ -21,12 +21,11 @@
 package edu.ufl.osg.gatormail.client.services;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.rpc.SerializableException;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 
 /**
- * TODO: Write Class JavaDoc
+ * Async interface for {@link edu.ufl.osg.gatormail.client.services.FoldersService}.
  *
  * @author Sandy McArthur
  */

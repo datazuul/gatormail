@@ -20,26 +20,23 @@
 
 package edu.ufl.osg.gatormail.server.folderTree;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.client.rpc.SerializableException;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sun.mail.imap.IMAPFolder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.mail.Store;
-import javax.mail.MessagingException;
-import javax.mail.Folder;
-import javax.mail.URLName;
-import javax.mail.UIDFolder;
-import javax.mail.Session;
-
-import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.services.FoldersService;
 import edu.ufl.osg.gatormail.server.MessageServiceImpl;
 
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.UIDFolder;
+import javax.mail.URLName;
+
 /**
- * TODO: Write Class JavaDoc
+ * Basic implementation of {@link edu.ufl.osg.gatormail.client.services.FoldersService}.
  *
  * @author Sandy McArthur
  */

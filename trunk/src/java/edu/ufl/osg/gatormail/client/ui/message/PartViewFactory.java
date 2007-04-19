@@ -37,7 +37,7 @@ import edu.ufl.osg.gatormail.client.ui.message.text.HtmlPartView;
 import edu.ufl.osg.gatormail.client.ui.message.text.PlainPartView;
 
 /**
- * TODO: Write class JavaDoc.
+ * Produces Widgets to render message parts.
  *
  * @author Sandy McArthur
  */

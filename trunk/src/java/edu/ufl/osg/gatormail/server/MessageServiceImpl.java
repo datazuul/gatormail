@@ -44,6 +44,7 @@ import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
 import edu.ufl.osg.gatormail.client.services.LoginService;
 import edu.ufl.osg.gatormail.client.services.MessageService;
+import edu.ufl.osg.gatormail.server.state.PrivateStateCipher;
 import net.sf.classifier4J.summariser.ISummariser;
 import net.sf.classifier4J.summariser.SimpleSummariser;
 
@@ -66,6 +67,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import javax.mail.internet.NewsAddress;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.UnavailableException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,11 +80,27 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * TODO: Write class JavaDoc.
+ * Basic implementation of {@link edu.ufl.osg.gatormail.client.services.MessageService}.
  *
  * @author Sandy McArthur
  */
 public class MessageServiceImpl extends RemoteServiceServlet implements MessageService {
+
+    public void init(final ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+
+        // Make sure the PrivateStateCipher is setup first.
+        final PrivateStateCipher psc;
+        try {
+            psc = (PrivateStateCipher)servletConfig.getServletContext().getAttribute(PrivateStateCipher.class.getName());
+        } catch (ClassCastException cce) {
+            throw new ServletException("Unknown Encryption services provider.", cce);
+        }
+        if (psc == null) {
+            // PrivateStateCipher hasn't been set
+            throw new UnavailableException("Encryption Services not yet initialized.", 10); // try again in 10 seconds
+        }
+    }
 
     public GMMessageHeaders fetchHeaders(final Account account, final GMMessage gmMessage) throws SerializableException {
         final Session session = fetchSession(account);
@@ -600,7 +620,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return null;
     }
 
-    private static GMPart convertMessageParts(final Part part) throws MessagingException, IOException {
+    private GMPart convertMessageParts(final Part part) throws MessagingException, IOException {
         // TODO: image/*
         // TODO: audio/*
         GMPart convertedPart = null;
@@ -723,7 +743,15 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
                 final GMContentDisposition gmContentDisposition = new GMContentDisposition();
                 gmContentDisposition.setType(cd.getDisposition());
                 gmContentDisposition.setFilename(cd.getParameter("filename"));
-                gmContentDisposition.setSize(Integer.parseInt(cd.getParameter("size")));
+                final String size = cd.getParameter("size");
+                if (size != null) {
+                    try {
+                        gmContentDisposition.setSize(Integer.parseInt(size));
+                    } catch (NumberFormatException nfe) {
+                        log("Problem parsing size: " + size, nfe);
+                        // swallowed
+                    }
+                }
                 convertedPart.setDisposition(gmContentDisposition);
             }
             if (part instanceof MimePart) {

@@ -22,15 +22,14 @@ package edu.ufl.osg.gatormail.client.ui;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 /**
- * TODO: Write Class JavaDoc
+ * Displays the Subject of a Message when available.
  *
  * @author Sandy McArthur
  */
@@ -75,6 +74,7 @@ public class SubjectLabel extends Composite {
             //label.setTitle(headers.getSubject());
         }
 
+        // XXX: Once we know a subject it should never change, right? Could we advoid listening for changes then? 
     }
 
     protected GMMessage getMessage() {

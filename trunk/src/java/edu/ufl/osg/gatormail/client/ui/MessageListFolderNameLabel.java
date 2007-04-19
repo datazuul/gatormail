@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.Label;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 
 /**
- * TODO: Write class JavaDoc.
+ * Displays the name of a Folder.
  *
  * @author Sandy McArthur
  */

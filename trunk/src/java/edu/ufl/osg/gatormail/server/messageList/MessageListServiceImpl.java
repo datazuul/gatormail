@@ -20,34 +20,33 @@
 
 package edu.ufl.osg.gatormail.server.messageList;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.client.rpc.SerializableException;
-
-import javax.mail.Store;
-import javax.mail.MessagingException;
-import javax.mail.Message;
-import javax.mail.Folder;
-import javax.mail.UIDFolder;
-import javax.mail.Flags;
-import javax.mail.FetchProfile;
-import javax.mail.Session;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.model.GMFlags;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFlags;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.services.MessageListService;
 import edu.ufl.osg.gatormail.server.MessageServiceImpl;
 
+import javax.mail.FetchProfile;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.UIDFolder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
- * TODO: Write Class JavaDoc
+ * Basic implementation of {@link edu.ufl.osg.gatormail.client.services.MessageListService}.
  *
  * @author Sandy McArthur
  * @since Sep 28, 2006 3:32:23 PM

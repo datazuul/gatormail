@@ -23,6 +23,7 @@ package edu.ufl.osg.gatormail.client.ui.message;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 import edu.ufl.osg.gatormail.client.model.message.GMPart;
+import edu.ufl.osg.gatormail.client.model.message.image.GMImage;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMMixed;
@@ -30,6 +31,7 @@ import edu.ufl.osg.gatormail.client.model.message.multipart.GMParallel;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMRelated;
 import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
+import edu.ufl.osg.gatormail.client.ui.message.image.ImagePartView;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.AlternativePartView;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.MixedPartView;
 import edu.ufl.osg.gatormail.client.ui.message.multipart.RelatedPartView;
@@ -71,6 +73,9 @@ public class PartViewFactory {
             
         } else if (part instanceof GMHtml) {
             return new HtmlPartView((GMHtml)part);
+
+        } else if (part instanceof GMImage) {
+            return new ImagePartView((GMImage)part);
         }
 
         GWT.log("Unexpected Message Part type: " + GWT.getTypeName(part), new RuntimeException(GWT.getTypeName(part)));

@@ -34,6 +34,7 @@ import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
 import edu.ufl.osg.gatormail.client.model.message.GMPart;
+import edu.ufl.osg.gatormail.client.model.message.image.GMImage;
 import edu.ufl.osg.gatormail.client.model.message.message.GMRfc822;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMAlternative;
 import edu.ufl.osg.gatormail.client.model.message.multipart.GMDigest;
@@ -60,12 +61,12 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.UIDFolder;
-import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.NewsAddress;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -218,7 +219,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
 
                 final Message message = uidFolder.getMessageByUID(gmMessage.getUid());
 
-                part = convertMessageParts(message);
+                part = convertMessageParts(account, folder, message);
 
             } catch (MessagingException e) {
                 throw new SerializableException("MessagingException message: " + gmMessage + ", reason: " + e.getMessage());
@@ -620,7 +621,11 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return null;
     }
 
-    private GMPart convertMessageParts(final Part part) throws MessagingException, IOException {
+    private GMPart convertMessageParts(final Account account, final Folder folder, final Message message) throws MessagingException, IOException {
+        return convertMessageParts(account, folder, message, message, "");
+    }
+
+    private GMPart convertMessageParts(final Account account, final Folder folder, final Message message, final Part part, final String path) throws MessagingException, IOException {
         // TODO: image/*
         // TODO: audio/*
         GMPart convertedPart = null;
@@ -630,7 +635,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final GMMixed mixed = new GMMixed();
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                mixed.addPart(convertMessageParts(p));
+                mixed.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = mixed;
 
@@ -640,7 +645,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final GMAlternative alternative = new GMAlternative();
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                alternative.addPart(convertMessageParts(p));
+                alternative.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = alternative;
 
@@ -650,7 +655,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final GMDigest digest = new GMDigest();
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                digest.addPart(convertMessageParts(p));
+                digest.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = digest;
 
@@ -660,7 +665,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final GMParallel parallel = new GMParallel();
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                parallel.addPart(convertMessageParts(p));
+                parallel.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = parallel;
 
@@ -678,7 +683,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             }
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                related.addPart(convertMessageParts(p));
+                related.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = related;
 
@@ -688,7 +693,7 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             final GMMixed mixed = new GMMixed();
             for (int i = 0; i < mimeMultipart.getCount(); i++) {
                 final Part p = mimeMultipart.getBodyPart(i);
-                mixed.addPart(convertMessageParts(p));
+                mixed.addPart(convertMessageParts(account, folder, message, p, path + "." + i));
             }
             convertedPart = mixed;
 
@@ -703,6 +708,13 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             } else if (part.isMimeType("text/richtext")) {
                 convertedPart = new GMRichText(part.getContent());
             */
+        } else if (part.isMimeType("image/*")) {
+            final GMImage image = new GMImage();
+            final ImagePartServlet.ImagePartBean ip = ImagePartServlet.createImagePart(account, folder, message, path);
+            final PrivateStateCipher psc = (PrivateStateCipher)getServletContext().getAttribute(PrivateStateCipher.class.getName());
+            image.setToken(psc.encode(ip));
+            convertedPart = image;
+
         } else if (part.isMimeType("text/html")) {
             convertedPart = new GMHtml((String)part.getContent());
 
@@ -737,23 +749,17 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         }
         if (convertedPart != null) {
             convertedPart.setDescription(part.getDescription());
-            final String disposition = part.getDisposition();
-            if (disposition != null) {
-                final ContentDisposition cd = new ContentDisposition(disposition);
-                final GMContentDisposition gmContentDisposition = new GMContentDisposition();
-                gmContentDisposition.setType(cd.getDisposition());
-                gmContentDisposition.setFilename(cd.getParameter("filename"));
-                final String size = cd.getParameter("size");
-                if (size != null) {
-                    try {
-                        gmContentDisposition.setSize(Integer.parseInt(size));
-                    } catch (NumberFormatException nfe) {
-                        log("Problem parsing size: " + size, nfe);
-                        // swallowed
-                    }
-                }
-                convertedPart.setDisposition(gmContentDisposition);
+            final GMContentDisposition gmContentDisposition = new GMContentDisposition();
+            gmContentDisposition.setType(part.getDisposition());
+
+            String fileName = part.getFileName();
+            if (fileName != null && fileName.startsWith("=?")) {
+                fileName = MimeUtility.decodeWord(fileName);
             }
+            gmContentDisposition.setFilename(fileName);
+
+            gmContentDisposition.setSize(part.getSize());
+            convertedPart.setDisposition(gmContentDisposition);
             if (part instanceof MimePart) {
                 final MimePart mimePart = (MimePart)part;
                 convertedPart.setContentId(mimePart.getContentID());

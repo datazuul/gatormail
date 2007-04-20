@@ -21,9 +21,8 @@
 package edu.ufl.osg.gatormail.client.model.impl;
 
 import edu.ufl.osg.gatormail.client.model.Account;
-import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class GatorLinkAccount implements IsSerializable, Account {
+public class GatorLinkAccount implements Account {
 
     private String username;
     private String password;
@@ -57,7 +56,6 @@ public class GatorLinkAccount implements IsSerializable, Account {
         return "INBOX/Trash";
     }
 
-
     public String getUsername() {
         return username;
     }
@@ -81,5 +79,11 @@ public class GatorLinkAccount implements IsSerializable, Account {
 
     public void setPassword(final String password) {
         this.password = password;
+    }
+
+    public String toString() {
+        return "GatorLinkAccount{" +
+                "emailAddress='" + getEmailAddress() + '\'' +
+                '}';
     }
 }

@@ -135,16 +135,18 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
 
 
                 final Message[] messageRange = uidFolder.getMessagesByUID(startUID, endUID);
-                assert messageRange.length >= 1;
+                //assert messageRange.length >= 1;
 
-                System.err.println("messageRange startUID: " + startUID + " : " + uidFolder.getUID(messageRange[0]));
-                System.err.println("messageRange endUID: " + endUID + " : " + uidFolder.getUID(messageRange[messageRange.length-1]));
+                System.err.println("messageRange startUID: " + startUID + " : " + (messageRange.length > 1 ? uidFolder.getUID(messageRange[0]) : -1));
+                System.err.println("messageRange endUID: " + endUID + " : " + (messageRange.length > 1 ? uidFolder.getUID(messageRange[messageRange.length-1]) : -1));
 
                 sortByUID(uidFolder, messageRange);
 
-                assert uidFolder.getUID(messageRange[0]) >= startUID : "A message with an unexpected lower UID snuck in there.";
-                assert uidFolder.getUID(messageRange[messageRange.length-1]) <= endUID : "A message with an unexpected higher UID snuck in there.";
-                assert messageRange.length <= messageCount : "A message snuck into the middle.";
+                if (messageRange.length > 0) {
+                    assert uidFolder.getUID(messageRange[0]) >= startUID : "A message with an unexpected lower UID snuck in there.";
+                    assert uidFolder.getUID(messageRange[messageRange.length-1]) <= endUID : "A message with an unexpected higher UID snuck in there.";
+                    assert messageRange.length <= messageCount : "A message snuck into the middle.";
+                }
 
                 // Return still valid UIDs so the ones not found can be pruned.
                 if (messageRange.length < messageCount) {

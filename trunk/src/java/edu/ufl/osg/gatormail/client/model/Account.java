@@ -22,10 +22,12 @@ package edu.ufl.osg.gatormail.client.model;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import java.io.Serializable;
+
 /**
  * An account for a mail box.
  */
-public interface Account {
+public interface Account extends IsSerializable, Serializable {
 
     /**
      * Account Name.

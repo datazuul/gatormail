@@ -18,5 +18,6 @@
     <servlet path="/folders" class="edu.ufl.osg.gatormail.server.folderTree.FoldersServiceImpl"/>
     <servlet path="/messageList" class="edu.ufl.osg.gatormail.server.messageList.MessageListServiceImpl"/>
     <servlet path="/message" class="edu.ufl.osg.gatormail.server.MessageServiceImpl"/>
+    <servlet path="/image" class="edu.ufl.osg.gatormail.server.ImagePartServlet"/>
 
 </module>

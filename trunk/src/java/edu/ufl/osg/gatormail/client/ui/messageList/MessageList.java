@@ -951,6 +951,7 @@ public class MessageList extends Composite {
 
     private static class NotImplementedCommand implements Command {
         public void execute() {
+            GWT.log("Feature not implemented yet.", new UnsupportedOperationException("Feature not implemented yet."));
             Window.alert("Feature not implemented yet.");
         }
     }

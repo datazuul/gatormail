@@ -18,16 +18,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.ui;
+package edu.ufl.osg.gatormail.client.ui.messageList;
 
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.DOM;
-import org.mcarthur.sandy.gwt.event.list.client.RangedEventList;
-import org.mcarthur.sandy.gwt.event.list.client.ListEventListener;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
-import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
+import org.mcarthur.sandy.gwt.event.list.client.ListEventListener;
+import org.mcarthur.sandy.gwt.event.list.client.RangedEventList;
 
 /**
  * Displays information about the current message list page.
@@ -35,7 +36,9 @@ import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
  * @author Sandy McArthur
  */
 public final class MessageListPageLabel extends Composite {
+    // TODO: Update this so when you dbl click on the parts some convert to a drop down list.
 
+    private HorizontalPanel hp = new HorizontalPanel();
     private final Label label = new PageLabel();
     private final ListEventListener updateListEventListener = new PageUpdateListEventListener();
 
@@ -45,7 +48,10 @@ public final class MessageListPageLabel extends Composite {
     public MessageListPageLabel(final MessageList messagesList, final RangedEventList messages) {
         this.messagesList = messagesList;
         this.messages = messages;
-        initWidget(label);
+
+        initWidget(hp);
+
+        hp.add(label);
 
         addStyleName("gm-MessageListPageLabel");
         label.sinkEvents(Event.ONDBLCLICK);
@@ -84,7 +90,7 @@ public final class MessageListPageLabel extends Composite {
     }
 
     private void showPageConfig() {
-        messagesList.showPageSizeConfig();
+        GWT.log("TODO: Convert to SelectBox", null);
     }
 
     private class PageUpdateListEventListener implements ListEventListener {

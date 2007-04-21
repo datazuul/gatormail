@@ -56,8 +56,6 @@ import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.FlaggedLabel;
 import edu.ufl.osg.gatormail.client.ui.FromAddressesLabel;
-import edu.ufl.osg.gatormail.client.ui.MessageListPageButtons;
-import edu.ufl.osg.gatormail.client.ui.MessageListPageLabel;
 import edu.ufl.osg.gatormail.client.ui.ReceivedDateLabel;
 import edu.ufl.osg.gatormail.client.ui.SelectionCheckBox;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
@@ -127,8 +125,7 @@ public class MessageList extends Composite {
         headerRow.addStyleName("gm-MessageList-HeaderRow");
         headerRow.setWidth("100%");
 
-        final Label folderNameLabel = new Label(gmFolder.getFullName());
-        folderNameLabel.addStyleName("gm-MessageList-FolderName");
+        final MessageListFolderNameLabel folderNameLabel = new MessageListFolderNameLabel(folder);
         headerRow.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
         headerRow.add(folderNameLabel);
         headerRow.setCellWidth(folderNameLabel, "100%");
@@ -490,13 +487,7 @@ public class MessageList extends Composite {
         return fromMenuDropDown;
     }
 
-    public void showPageSizeConfig() {
-        oltRenderer.addPageSizeConfig();
-        oltSummaryRenderer.addPageSizeConfig();
-    }
-
     private class FetchMessageListCommand implements Command {
-
         public void execute() {
             final MessageListServiceAsync service = MessageListService.App.getInstance();
 
@@ -513,25 +504,6 @@ public class MessageList extends Composite {
     }
 
     private class MessageRenderer implements ObjectListTable.Renderer, ObjectListTable.AttachRenderer, ObjectListTable.ColSpecRenderer {
-        private TableHeaderGroup headerRowGroup;
-        private TableRow pageSizeRow;
-
-        protected void addPageSizeConfig() {
-            if (headerRowGroup != null) {
-                if (pageSizeRow == null) {
-                    pageSizeRow = headerRowGroup.newTableRow();
-                    final TableCell cell = pageSizeRow.newTableHeaderCell();
-                    cell.setColSpan(7);
-                    // TODO: implemented page size controls.
-                    cell.add(new Label("TODO: Add controls to edit the page sizes."));
-                    pageSizeRow.add(cell);
-                }
-                if (!headerRowGroup.getRows().contains(pageSizeRow)) {
-                    headerRowGroup.add(pageSizeRow);
-                }
-            }
-        }
-
         public void render(final Object obj, final TableBodyGroup rowGroup) {
             final GMMessage message = (GMMessage)obj;
 
@@ -552,11 +524,7 @@ public class MessageList extends Composite {
                 final TableDataCell flaggedCell = tr.newTableDataCell();
                 flaggedCell.addStyleName("gm-MessageList-td");
                 flaggedCell.setWidth("2ex");
-                if (true) {
-                    flaggedCell.add(new FlaggedLabel(message));
-                } else {
-                    flaggedCell.add(new HTML("&nbsp;"));
-                }
+                flaggedCell.add(new FlaggedLabel(client, message));
                 tr.add(flaggedCell);
             }
 
@@ -574,16 +542,6 @@ public class MessageList extends Composite {
                 toCell.addStyleName("gm-MessageList-td");
                 toCell.setWidth("2ex");
                 toCell.add(new ToMeLabel(client, message));
-                /*
-                final float r = (float)Math.random();
-                if (r < 0.3333333333333333) {
-                    toCell.add(new HTML("&rsaquo;"));
-                } else if (r < 0.66666666666666666) {
-                    toCell.add(new HTML("&raquo;"));
-                } else {
-                    toCell.add(new HTML("&nbsp;"));
-                }
-                */
                 tr.add(toCell);
             }
 
@@ -632,26 +590,26 @@ public class MessageList extends Composite {
             }
 
             rowGroup.addMouseListener(new TableRowGroup.MouseListener() {
-                public void onDblClick(TableRowGroup rowGroup, Event event) {
+                public void onDblClick(final TableRowGroup rowGroup, final Event event) {
                     client.openMessage(message);
                 }
 
-                public void onClick(TableRowGroup rowGroup, Event event) {
+                public void onClick(final TableRowGroup rowGroup, final Event event) {
                 }
 
-                public void onMouseDown(TableRowGroup rowGroup, Event event) {
+                public void onMouseDown(final TableRowGroup rowGroup, final Event event) {
                 }
 
-                public void onMouseMove(TableRowGroup rowGroup, Event event) {
+                public void onMouseMove(final TableRowGroup rowGroup, final Event event) {
                 }
 
-                public void onMouseOver(TableRowGroup rowGroup, Event event) {
+                public void onMouseOver(final TableRowGroup rowGroup, final Event event) {
                 }
 
-                public void onMouseOut(TableRowGroup rowGroup, Event event) {
+                public void onMouseOut(final TableRowGroup rowGroup, final Event event) {
                 }
 
-                public void onMouseUp(TableRowGroup rowGroup, Event event) {
+                public void onMouseUp(final TableRowGroup rowGroup, final Event event) {
                 }
             });
         }
@@ -730,7 +688,7 @@ public class MessageList extends Composite {
         }
 
         public void onAttach(final TableHeaderGroup rowGroup) {
-            headerRowGroup = rowGroup;
+            // n/a
         }
 
         public void onAttach(final TableFooterGroup rowGroup) {
@@ -745,10 +703,7 @@ public class MessageList extends Composite {
         }
 
         public void onDetach(final TableHeaderGroup rowGroup) {
-            //if (pageSizeRow != null) {
-                rowGroup.getRows().remove(pageSizeRow);
-            //}
-            headerRowGroup = null;
+            // n/a
         }
 
         public void onDetach(final TableFooterGroup rowGroup) {

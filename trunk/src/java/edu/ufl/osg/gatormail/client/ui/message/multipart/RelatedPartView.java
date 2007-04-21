@@ -61,7 +61,7 @@ public class RelatedPartView extends Composite {
         // TODO: convert to use list iterator with GWT 1.4
         final List parts = new ArrayList(related.getParts());
 
-        String cid = related.getContentId();
+        final String cid = related.getContentId();
 
         if (cid != null) {
             for (int i=parts.size()-1; i >=0; i--) {

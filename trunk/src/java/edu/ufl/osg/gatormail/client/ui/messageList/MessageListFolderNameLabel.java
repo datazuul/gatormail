@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.ui;
+package edu.ufl.osg.gatormail.client.ui.messageList;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -40,7 +40,9 @@ public class MessageListFolderNameLabel extends Composite {
     public MessageListFolderNameLabel(final GMFolder folder) {
         assert folder != null;
         this.folder = folder;
+
         initWidget(hp);
+        addStyleName("gm-MessageListFolderNameLabel");
 
         folderName.addStyleName("gm-MessageList-FolderName");
 
@@ -50,9 +52,15 @@ public class MessageListFolderNameLabel extends Composite {
 
     protected void onAttach() {
         super.onAttach();
+
+        updateFolderLabel();
     }
 
     protected void onDetach() {
         super.onDetach();
+    }
+
+    private void updateFolderLabel() {
+        folderName.setText(folder.getFullName());
     }
 }

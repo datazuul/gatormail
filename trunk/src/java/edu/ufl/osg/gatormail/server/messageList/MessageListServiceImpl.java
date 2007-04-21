@@ -190,7 +190,7 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
         {
 
 
-            List<Message> messages;
+            final List<Message> messages;
             try {
                 final Message[] messageRange = uidFolder.getMessagesByUID(startUID, endUID);
                 sortByUID((UIDFolder)folder, messageRange);
@@ -217,7 +217,7 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             // Prefetch all flags to improve performance.
             Message[] m = new Message[messages.size()];
             m = messages.toArray(m);
-            FetchProfile fp = new FetchProfile();
+            final FetchProfile fp = new FetchProfile();
             fp.add(FetchProfile.Item.FLAGS);
             try {
                 folder.fetch(m, fp);

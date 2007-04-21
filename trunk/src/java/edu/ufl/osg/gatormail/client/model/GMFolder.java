@@ -21,13 +21,12 @@
 package edu.ufl.osg.gatormail.client.model;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import org.mcarthur.sandy.gwt.event.property.client.PropertyChangeSource;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-
-import org.mcarthur.sandy.gwt.event.property.client.PropertyChangeSource;
 
 
 /**
@@ -65,7 +64,6 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     public GMFolder() {
     }
 
-
     public GMFolder(final String fullName) {
         setFullName(fullName);
     }
@@ -75,7 +73,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setUrlName(final String urlName) {
-        final Object old = this.urlName;
+        final Object old = getUrlName();
         this.urlName = urlName;
         pcs.firePropertyChange("urlName", old, urlName);
     }
@@ -85,7 +83,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setName(final String name) {
-        final Object old = this.name;
+        final Object old = getName();
         this.name = name;
         pcs.firePropertyChange("name", old, name);
     }
@@ -95,18 +93,17 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setFullName(final String fullName) {
-        final Object old = this.fullName;
+        final Object old = getFullName();
         this.fullName = fullName;
         pcs.firePropertyChange("fullName", old, fullName);
     }
-
 
     public boolean isHoldsFolders() {
         return holdsFolders;
     }
 
     public void setHoldsFolders(final boolean holdsFolders) {
-        final boolean old = this.holdsFolders;
+        final boolean old = isHoldsFolders();
         this.holdsFolders = holdsFolders;
         pcs.firePropertyChange("holdsFolders", old, holdsFolders);
     }
@@ -116,7 +113,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setHoldsMessages(final boolean holdsMessages) {
-        final boolean old = this.holdsMessages;
+        final boolean old = isHoldsMessages();
         this.holdsMessages = holdsMessages;
         pcs.firePropertyChange("holdsMessages", old, holdsMessages);
     }
@@ -126,7 +123,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setMessageCount(final int messageCount) {
-        final int old = this.messageCount;
+        final int old = getMessageCount();
         this.messageCount = messageCount;
         pcs.firePropertyChange("messageCount", old, messageCount);
     }
@@ -136,7 +133,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setDeletedMessageCount(final int deletedMessageCount) {
-        final int old = this.deletedMessageCount;
+        final int old = getDeletedMessageCount();
         this.deletedMessageCount = deletedMessageCount;
         pcs.firePropertyChange("deletedMessageCount", old, deletedMessageCount);
     }
@@ -146,7 +143,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setNewMessageCount(final int newMessageCount) {
-        final int old = this.newMessageCount;
+        final int old = getNewMessageCount();
         this.newMessageCount = newMessageCount;
         pcs.firePropertyChange("newMessageCount", old, newMessageCount);
     }
@@ -156,7 +153,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setUnreadMessageCount(final int unreadMessageCount) {
-        final int old = this.unreadMessageCount;
+        final int old = getUnreadMessageCount();
         this.unreadMessageCount = unreadMessageCount;
         pcs.firePropertyChange("unreadMessageCount", old, unreadMessageCount);
     }
@@ -166,7 +163,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setType(final int type) {
-        final int old = this.type;
+        final int old = getType();
         this.type = type;
         pcs.firePropertyChange("type", old, type);
     }
@@ -176,7 +173,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setSeparator(final char separator) {
-        final Object old = new Character(this.separator);
+        final Object old = new Character(getSeparator());
         this.separator = separator;
         pcs.firePropertyChange("separator", old, new Character(separator));
     }
@@ -186,7 +183,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setUidValidity(final long uidValidity) {
-        final Object old = new Long(this.uidValidity != null ? this.uidValidity : "-1");
+        final Object old = new Long(getUidValidity());
         this.uidValidity = Long.toString(uidValidity);
         pcs.firePropertyChange("uidValidity", old, new Long(uidValidity));
     }
@@ -205,7 +202,7 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     }
 
     public void setSubFolders(final List/*<String>*/ subFolders) {
-        final Object old = this.subFolders;
+        final Object old = getSubFolders();
         this.subFolders = subFolders;
         pcs.firePropertyChange("subFolders", old, subFolders);
     }
@@ -237,7 +234,6 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
     public int hashCode() {
         return urlName.hashCode();
     }
-
 
     public String toString() {
         return "GMFolder{" +

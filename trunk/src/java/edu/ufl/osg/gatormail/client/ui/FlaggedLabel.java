@@ -22,8 +22,9 @@ package edu.ufl.osg.gatormail.client.ui;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Image;
-import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.GMFlags;
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,14 +35,18 @@ import java.beans.PropertyChangeListener;
  * @author Sandy McArthur
  */
 public class FlaggedLabel extends Composite {
+    // TODO: Make it so when a Flag is clicked it toggles the messages Flagged state.
+    private final GatorMailWidget client;
     private final GMMessage message;
 
     private final Image image = new Image();
 
     private final MessagePropertyChangeListener messageChangeListener = new MessagePropertyChangeListener();
 
-    public FlaggedLabel(final GMMessage message) {
+    public FlaggedLabel(final GatorMailWidget client, final GMMessage message) {
+        assert client != null;
         assert message != null;
+        this.client = client;
         this.message = message;
 
         initWidget(image);

@@ -33,8 +33,6 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.Properties;
 
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
@@ -53,22 +51,27 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
     }
 
     public LoginResult doLogin(final String username, final String password) throws LoginException {
-        final HttpServletRequest request = getThreadLocalRequest();
-        final HttpSession httpSession = request.getSession();
-
         final Properties props = new Properties(System.getProperties());
-        //props.setProperty("mail.debug", "true");
+        props.setProperty("mail.debug", "true");
 
-        props.setProperty("mail.store.protocol", "imap");
+        if (props.getProperty("mail.store.protocol") == null) {
+            props.setProperty("mail.store.protocol", "imap"); // XXX: why doesn't 'imaps' work?
+        }
         props.setProperty("mail.imap.host", "imap.ufl.edu");
-        props.setProperty("mail.imap.port", "143");
+        if ("imap".equals(props.getProperty("mail.store.protocol"))) {
+            props.setProperty("mail.imap.port", "143");
+        } else if ("imaps".equals(props.getProperty("mail.store.protocol"))) {
+            props.setProperty("mail.imap.port", "993");
+        }
+        System.err.println("mail.store.protocol: " + props.getProperty("mail.store.protocol"));
+        System.err.println("mail.imap.host: " + props.getProperty("mail.imap.host"));
+        System.err.println("mail.imap.port: " + props.getProperty("mail.imap.port"));
         //props.setProperty("", "");
 
         props.setProperty("mail.transport.protocol", "smtp");
         props.setProperty("mail.smtp.host", "smtp.ufl.edu");
         props.setProperty("mail.smtp.port", "587");
         //props.setProperty("", "");
-
 
         final Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -85,7 +88,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         } catch (Exception e) {
             throw new LoginException(e.getMessage(), e);
         }
-        httpSession.setAttribute("javamail.session", session);
 
         try {
             store.connect();
@@ -124,11 +126,4 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
     private static String decode(final String code) {
         return new String(Base64.decode(code));
     }
-
-    /*
-    public static void main(String[] args) {
-        System.out.println(Base64.encode("".getBytes()));
-    }
-    */
-
 }

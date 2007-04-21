@@ -99,7 +99,6 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
             }
         });
 
-
         History.addHistoryListener(this);
 
         tabs.getTabBar().addStyleName("gm-MailClient-TabBar");
@@ -111,7 +110,7 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
     }
 
     public void setAccount(final Account account) {
-        Object old = this.account;
+        final Object old = getAccount();
         this.account = account;
         pcs.firePropertyChange("account", old, account);
     }
@@ -165,7 +164,6 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 final LoginService.LoginResult loginResult = (LoginService.LoginResult) result;
                 if (loginResult.isSuccess()) {
                     setAccount(loginResult.getAccount());
-                    //header.setUsername(getAccount().getUsername());
                     loadMainView();
                     loadWelcome();
                 }
@@ -179,13 +177,11 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
     }
 
     private void loadWelcome() {
-
         final VerticalPanel vp = new VerticalPanel();
         vp.setWidth("16.6ex");
 
         tabs.add(new HTML("This is alpha quality code.<br/>Expect it to be buggy and slow.<br/>Select on a folder on the left."), "Welcome");
         tabs.selectTab(0);
-
     }
 
     private Map openFolders = new HashMap();

@@ -20,31 +20,74 @@
 
 package edu.ufl.osg.gatormail.client.ui;
 
-import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.ClickListener;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Widget;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class FolderHyperlink extends Hyperlink {
+    private final FolderPropertyChangeListener folderPropertyChangeListener = new FolderPropertyChangeListener();
 
     private final GatorMailWidget client;
     private final GMFolder folder;
-
-    public FolderHyperlink(final GatorMailWidget client, final GMFolder folder) {
-        this.client = client;
-        this.folder = folder;
-        addStyleName("gm-FolderHyperlink");
-    }
+    private final String text;
 
     public FolderHyperlink(final GatorMailWidget client, final GMFolder folder, final String text) {
-        this(client, folder);
-        setText(text);
-        setTargetHistoryToken(folder.getFullName());
+        this.client = client;
+        this.folder = folder;
+        this.text = text;
+
+        addStyleName("gm-FolderHyperlink");
         addStyleName("gm-FolderHyperlink-" + text);
-        this.addClickListener(new FolderClickListener());
+
+        updateText();
+        setTargetHistoryToken(folder.getFullName());
+
+        addClickListener(new FolderClickListener());
     }
 
+
+    protected void onAttach() {
+        super.onAttach();
+
+        folder.addPropertyChangeListener(folderPropertyChangeListener);
+
+        updateText();
+    }
+
+    protected void onDetach() {
+        super.onDetach();
+
+        folder.removePropertyChangeListener(folderPropertyChangeListener);
+    }
+
+    private void updateText() {
+        String text = this.text;
+        String title = folder.getFullName();
+
+        final int count = folder.getMessageCount();
+        final int unreadCount = folder.getUnreadMessageCount();
+
+        if (count == 0) {
+            title += ": no  messages";
+        } else if (count == 1) {
+            title += ": one message";
+        } else {
+            title += ": " + count + " messages";
+        }
+
+        if (unreadCount > 0) {
+            text += " (" + unreadCount + ")";
+            title += ", " + unreadCount + " unread";
+        }
+
+        setText(text);
+        setTitle(title);
+    }
 
     private static class FolderClickListener implements ClickListener {
         public void onClick(final Widget sender) {
@@ -53,5 +96,9 @@ public class FolderHyperlink extends Hyperlink {
         }
     }
 
-
+    private class FolderPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            updateText();
+        }
+    }
 }

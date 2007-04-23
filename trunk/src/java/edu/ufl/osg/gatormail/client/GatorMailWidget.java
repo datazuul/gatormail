@@ -140,10 +140,11 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
     }
 
     private final VerticalPanel mainPanel = new VerticalPanel();
+    private NavPanel navPanel;
 
     private void loadMainView() {
 
-        final NavPanel navPanel = new NavPanel(this);
+        navPanel = new NavPanel(this);
         hp.add(navPanel);
         hp.setCellWidth(navPanel, "130px");
 
@@ -237,6 +238,13 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
 
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Update the meta data for a folder matching <code>folderName</code>.
+     */
+    public void refreshFolder(final String folderName) {
+        // TODO: figure out how to tell all views for a folder to refresh.
     }
 
     private class LoginListener implements LoginPanel.LoginListener {

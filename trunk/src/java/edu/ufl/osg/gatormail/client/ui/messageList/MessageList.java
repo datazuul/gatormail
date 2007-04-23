@@ -175,8 +175,7 @@ public class MessageList extends Composite {
 
         final HorizontalPanel buttons = new HorizontalPanel();
 
-        if (!folder.getFullName().equals(client.getAccount().getTrashFolderName())
-                && !folder.getFullName().equals(client.getAccount().getTrashFolderName())) {
+        if (!client.getAccount().getTrashFolderName().equals(folder.getFullName())) {
             // not Trash folder
             final Button delete = new Button("Delete");
             delete.setEnabled(!selectedMessages.isEmpty());
@@ -195,6 +194,7 @@ public class MessageList extends Composite {
                             final MessageService.DeleteMessagesResponse response = (MessageService.DeleteMessagesResponse)result;
                             // TODO: handle delete response
                             refresh();
+                            client.refreshFolder(client.getAccount().getTrashFolderName());
                         }
 
                         public void onFailure(final Throwable caught) {
@@ -223,6 +223,7 @@ public class MessageList extends Composite {
                             final MessageService.DeleteMessagesResponse response = (MessageService.DeleteMessagesResponse)result;
                             // TODO: handle delete response
                             refresh();
+                            client.refreshFolder(client.getAccount().getTrashFolderName());
                         }
 
                         public void onFailure(final Throwable caught) {
@@ -235,8 +236,31 @@ public class MessageList extends Composite {
         }
 
         final Button reportSpam = new Button("Report Spam");
-        reportSpam.setEnabled(false);
-        reportSpam.addClickListener(NOT_IMPLEMENTED_CLICK_LISTENER);
+        reportSpam.setEnabled(!selectedMessages.isEmpty());
+        selectedMessages.addListEventListener(new ListEventListener() {
+            public void listChanged(final ListEvent listEvent) {
+                reportSpam.setEnabled(!selectedMessages.isEmpty());
+            }
+        });
+        reportSpam.addClickListener(new ClickListener() {
+            public void onClick(final Widget sender) {
+                assert !selectedMessages.isEmpty() : "No messages selected.";
+                final List messagesToDelete = new ArrayList(selectedMessages);
+                final MessageServiceAsync service = MessageService.App.getInstance();
+                service.reportSpam(client.getAccount(), messagesToDelete, new AsyncCallback() {
+                    public void onSuccess(final Object result) {
+                        final MessageService.DeleteMessagesResponse response = (MessageService.DeleteMessagesResponse)result;
+                        // TODO: handle delete response
+                        refresh();
+                        client.refreshFolder(client.getAccount().getJunkFolderName());
+                    }
+
+                    public void onFailure(final Throwable caught) {
+                        GWT.log("Failed to delete messages.", caught);
+                    }
+                });
+            }
+        });
         buttons.add(reportSpam);
 
         final Button moveCopy = new Button("Move/Copy");

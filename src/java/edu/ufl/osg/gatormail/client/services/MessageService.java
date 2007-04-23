@@ -54,6 +54,11 @@ public interface MessageService extends RemoteService {
      */
     public DeleteMessagesResponse deleteMessagesForever(Account account, List/*<GMMessage>*/ messages) throws SerializableException;
 
+    /**
+     * @gwt.typeArgs messages <edu.ufl.osg.gatormail.client.model.message.GMMessage>
+     */
+    public DeleteMessagesResponse reportSpam(Account account, List/*<GMMessage>*/ messages) throws SerializableException;
+
     public static class DeleteMessagesResponse implements IsSerializable {
         public DeleteMessagesResponse() {
         }

@@ -51,27 +51,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
     }
 
     public LoginResult doLogin(final String username, final String password) throws LoginException {
-        final Properties props = new Properties(System.getProperties());
-        props.setProperty("mail.debug", "true");
-
-        if (props.getProperty("mail.store.protocol") == null) {
-            props.setProperty("mail.store.protocol", "imap"); // XXX: why doesn't 'imaps' work?
-        }
-        props.setProperty("mail.imap.host", "imap.ufl.edu");
-        if ("imap".equals(props.getProperty("mail.store.protocol"))) {
-            props.setProperty("mail.imap.port", "143");
-        } else if ("imaps".equals(props.getProperty("mail.store.protocol"))) {
-            props.setProperty("mail.imap.port", "993");
-        }
-        System.err.println("mail.store.protocol: " + props.getProperty("mail.store.protocol"));
-        System.err.println("mail.imap.host: " + props.getProperty("mail.imap.host"));
-        System.err.println("mail.imap.port: " + props.getProperty("mail.imap.port"));
-        //props.setProperty("", "");
-
-        props.setProperty("mail.transport.protocol", "smtp");
-        props.setProperty("mail.smtp.host", "smtp.ufl.edu");
-        props.setProperty("mail.smtp.port", "587");
-        //props.setProperty("", "");
+        final Properties props = getMailProperties();
 
         final Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -121,6 +101,35 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         account.setPassword(password);
         result.setAccount(account);
         return result;
+    }
+
+    public static Properties getMailProperties() {
+        final Properties props = new Properties(System.getProperties());
+        //props.setProperty("mail.debug", "true");
+
+        if (props.getProperty("mail.store.protocol") == null) {
+            props.setProperty("mail.store.protocol", "imaps"); // XXX: why doesn't 'imaps' work?
+        }
+        props.setProperty("mail." + props.getProperty("mail.store.protocol") + ".host", "imap.ufl.edu");
+        final String port;
+        if ("imap".equals(props.getProperty("mail.store.protocol"))) {
+            port = "143";
+        } else if ("imaps".equals(props.getProperty("mail.store.protocol"))) {
+            port = "993";
+        } else {
+            throw new IllegalStateException("Unknown mail.store.protocol: " + props.getProperty("mail.store.protocol"));
+        }
+        props.setProperty("mail." + props.getProperty("mail.store.protocol") + ".port", port);
+        System.err.println("mail.store.protocol: " + props.getProperty("mail.store.protocol"));
+        System.err.println("mail." + props.getProperty("mail.store.protocol") + ".host: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".host"));
+        System.err.println("mail." + props.getProperty("mail.store.protocol") + ".port: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".port"));
+        //props.setProperty("", "");
+
+        props.setProperty("mail.transport.protocol", "smtp");
+        props.setProperty("mail.smtp.host", "smtp.ufl.edu");
+        props.setProperty("mail.smtp.port", "587");
+        //props.setProperty("", "");
+        return props;
     }
 
     private static String decode(final String code) {

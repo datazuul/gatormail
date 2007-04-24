@@ -385,10 +385,10 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return null;
     }
 
-    public DeleteMessagesResponse reportSpam(Account account, List/*<GMMessage>*/ messages) throws SerializableException {
+    public DeleteMessagesResponse reportSpam(final Account account, final List/*<GMMessage>*/ messages) throws SerializableException {
         final Session session = fetchSession(account);
         final Store store = fetchConnectedStore(session);
-        final Folder spamFolder = fetchSpamFolder(account, store);
+        final Folder spamFolder = fetchJunkFolder(account, store);
 
         try {
             // XXX: Don't assume all messages are from the same folder.
@@ -456,6 +456,77 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return null;
     }
 
+    public DeleteMessagesResponse reportHam(final Account account, final List/*<GMMessage>*/ messages) throws SerializableException {
+        final Session session = fetchSession(account);
+        final Store store = fetchConnectedStore(session);
+        final Folder inboxFolder = fetchInboxFolder(account, store);
+
+        try {
+            // XXX: Don't assume all messages are from the same folder.
+            Folder folder = null;
+
+            final Iterator<GMMessage> iter = ((List<GMMessage>)messages).iterator();
+            while (iter.hasNext()) {
+                final GMMessage message = iter.next();
+                final GMFolder gmFolder = message.getFolder();
+                if (gmFolder == null) {
+                    throw new SerializableException("GMMessage doesn't have a folder set: " + message);
+                }
+
+                try {
+                    if (folder == null) {
+                        try {
+                            folder = store.getFolder(gmFolder.getFullName());
+                        } catch (MessagingException e) {
+                            e.printStackTrace();
+                            throw new SerializableException(e.getMessage());
+                        }
+                    } else {
+                        if (!gmFolder.getFullName().equals(folder.getFullName())) {
+                            throw new SerializableException("Folder not the same for all messages.!");
+                        }
+                    }
+
+                    folder.open(Folder.READ_WRITE);
+
+                    final UIDFolder uidFolder = (UIDFolder)folder;
+
+                    // Check that the UID Validity hasn't changed
+                    final long uidValidity = uidFolder.getUIDValidity();
+                    if (gmFolder.getUidValidity() != uidValidity) {
+                        throw new UidValidityChangedException(folder.getFullName(), gmFolder.getUidValidity(), uidValidity);
+                    }
+
+                    final Message messageToDelete = uidFolder.getMessageByUID(message.getUid());
+                    // TODO: throw an MessagingException to simulate a couldn't move to trash exception and deal with it nicely.
+                    folder.copyMessages(new Message[] {messageToDelete}, inboxFolder);
+
+                    messageToDelete.setFlag(Flags.Flag.DELETED, true);
+
+                } catch (MessagingException e) {
+                    throw new SerializableException("Problem moving message: " + message + " to spam folder, reason: " + e.getMessage());
+
+                } finally {
+                    if (folder != null) {
+                        try {
+                            folder.close(true);
+                        } catch (MessagingException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+
+        } finally {
+            try {
+                store.close();
+            } catch (MessagingException e) {
+                // swallow
+            }
+        }
+        return null;
+    }
+
     public static Session fetchSession(final Account account) throws SerializableException {
         if (!(account instanceof GatorLinkAccount)) {
             throw new LoginService.LoginException("Unexpected account type: " + (account != null ? account.getClass() : null));
@@ -489,22 +560,34 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         return store;
     }
 
+    private Folder fetchInboxFolder(final Account account, final Store store) throws SerializableException {
+        final Folder trashFolder;
+        try {
+            trashFolder = store.getFolder(account.getInboxFolderName());
+        } catch (MessagingException e) {
+            throw new SerializableException("INBOX folder not found: " + e.getMessage());
+        }
+        return trashFolder;
+    }
+
+    private Folder fetchJunkFolder(final Account account, final Store store) throws SerializableException {
+        final Folder trashFolder;
+        try {
+            trashFolder = store.getFolder(account.getJunkFolderName());
+        } catch (MessagingException e) {
+            final SerializableException se = new SerializableException("Junk folder not found: " + e.getMessage());
+            se.initCause(e);
+            throw se;
+        }
+        return trashFolder;
+    }
+
     private Folder fetchTrashFolder(final Account account, final Store store) throws SerializableException {
         final Folder trashFolder;
         try {
             trashFolder = store.getFolder(account.getTrashFolderName());
         } catch (MessagingException e) {
             throw new SerializableException("Trash folder not found: " + e.getMessage());
-        }
-        return trashFolder;
-    }
-
-    private Folder fetchSpamFolder(final Account account, final Store store) throws SerializableException {
-        final Folder trashFolder;
-        try {
-            trashFolder = store.getFolder(account.getSentFolderName());
-        } catch (MessagingException e) {
-            throw new SerializableException("Spam folder not found: " + e.getMessage());
         }
         return trashFolder;
     }

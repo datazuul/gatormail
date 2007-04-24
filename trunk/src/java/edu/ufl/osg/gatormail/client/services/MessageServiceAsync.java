@@ -44,4 +44,6 @@ public interface MessageServiceAsync {
     void deleteMessagesForever(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
 
     void reportSpam(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
+    
+    void reportHam(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
 }

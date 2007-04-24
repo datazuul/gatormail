@@ -102,7 +102,7 @@ public class MessageList extends Composite {
     private final ObjectListTable oltSummary;
     private final SummaryMessageRenderer oltSummaryRenderer;
 
-    private final EventList/*<GMMessage>*/ messages = EventLists.eventList();
+    private final EventList/*<GMMessage>*/ messages = EventLists.eventList(); // TODO: switch this to a "PartialObservingEventList"
     private final EventList/*<GMMessage>*/ messagesReversed = EventLists.reverseEventList(messages);
     private final FilteredEventList/*<GMMessage>*/ messagesFiltered = EventLists.filteredEventList(messagesReversed);
     private final RangedEventList/*<GMMessage>*/ messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);

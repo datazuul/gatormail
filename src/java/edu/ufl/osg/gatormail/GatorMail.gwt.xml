@@ -7,6 +7,7 @@
     <inherits name="org.mcarthur.sandy.gwt.table.Table"/>
     <inherits name="org.mcarthur.sandy.gwt.login.Login"/>
     <inherits name="org.mcarthur.sandy.gwt.event.property.PropertyChange"/>
+    <inherits name="org.mcarthur.sandy.gwt.event.list.property.PropertyChangeEventList"/>
 
     <!-- GWTx -->
     <inherits name="com.googlecode.gwtx.Java"/>

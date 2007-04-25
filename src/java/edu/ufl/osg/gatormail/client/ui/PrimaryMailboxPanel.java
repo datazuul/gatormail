@@ -71,31 +71,31 @@ public class PrimaryMailboxPanel extends Composite {
 
             if (account.getInboxFolderName() != null) {
                 final GMFolder inbox = client.fetchFolder(account.getInboxFolderName());
-                client.requestUpdate(inbox);
+                //client.requestUpdate(inbox);
                 panel.add(new FolderHyperlink(client, inbox, "INBOX"));
             }
 
             if (account.getDraftsFolderName() != null) {
                 final GMFolder drafts = client.fetchFolder(account.getDraftsFolderName());
-                client.requestUpdate(drafts);
+                //client.requestUpdate(drafts);
                 panel.add(new FolderHyperlink(client, drafts, "Drafts"));
             }
 
             if (account.getJunkFolderName() != null) {
                 final GMFolder junk = client.fetchFolder(account.getJunkFolderName());
-                client.requestUpdate(junk);
+                //client.requestUpdate(junk);
                 panel.add(new FolderHyperlink(client, junk, "Junk"));
             }
 
             if (account.getSentFolderName() != null) {
                 final GMFolder sent = client.fetchFolder(account.getSentFolderName());
-                client.requestUpdate(sent);
+                //client.requestUpdate(sent);
                 panel.add(new FolderHyperlink(client, sent, "Sent"));
             }
 
             if (account.getTrashFolderName() != null) {
                 final GMFolder trash = client.fetchFolder(account.getTrashFolderName());
-                client.requestUpdate(trash);
+                //client.requestUpdate(trash);
                 panel.add(new FolderHyperlink(client, trash, "Trash"));
             }
 

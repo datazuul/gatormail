@@ -43,16 +43,14 @@ public class FolderTreeItem extends TreeItem {
     private final FolderPropertyChangeListener folderPropertyChangeListener = new FolderPropertyChangeListener();
 
     // TODO: make this take a GMFolder instead of a name
-    public FolderTreeItem(final GatorMailWidget client, final String name) {
-        this(client, name, name);
-    }
-
-    public FolderTreeItem(final GatorMailWidget client, final String name, final String fullName) {
-        super(name);
+    public FolderTreeItem(final GatorMailWidget client, final GMFolder folder) {
+        super(pickName(folder));
         this.client = client;
-        folder = client.fetchFolder(fullName);
+        this.folder = folder;
 
         folder.addPropertyChangeListener(folderPropertyChangeListener);
+
+        updateFolder();
     }
 
     public FolderTreeItem getFolderTreeItemChild(final int index) {
@@ -75,57 +73,64 @@ public class FolderTreeItem extends TreeItem {
         folder.removePropertyChangeListener(folderPropertyChangeListener);
     }
 
+    private static String pickName(final GMFolder folder) {
+        if (folder.getName() != null) {
+            return folder.getName();
+        } else {
+            return folder.getFullName();
+        }
+    }
+
+    private void updateFolder() {
+        setText(pickName(getFolder()));
+        setTitle(folder.getFullName());
+
+        final List/*<String>*/ updatedChildren = new ArrayList(folder.getSubFolders());
+        final List/*<FolderTreeItem>*/ currentChildItems = new ArrayList/*<FolderTreeItem>*/();
+        final List/*<String>*/ currentChildNames = new ArrayList/*<String>*/();
+        for (int i=0; i < getChildCount(); i++) {
+            final FolderTreeItem item = getFolderTreeItemChild(i);
+            currentChildItems.add(item);
+            currentChildNames.add(item.getFolderFullName());
+        }
+
+        Collections.sort(updatedChildren);
+
+        // TODO: Manage these better
+        if (true) {
+            Iterator updateIter = updatedChildren.iterator();
+            while (updateIter.hasNext()) {
+                final String fullName = (String)updateIter.next();
+                if (!currentChildNames.contains(fullName)) {
+                    final GMFolder subFolder = client.fetchFolder(fullName);
+                    addItem(new FolderTreeItem(client, subFolder));
+                }
+            }
+        } else {
+            /* Not needed, they will be added in order
+            Collections.sort(currentChildItems, new Comparator() {
+                public int compare(final Object o1, final Object o2) {
+                    final FolderTreeItem f1 = (FolderTreeItem)o1;
+                    final FolderTreeItem f2 = (FolderTreeItem)o2;
+                    return f1.getFolderFullName().compareTo(f2.getFolderFullName());
+                }
+            });
+            */
+
+            // remove any old folder items
+            Iterator currentIter = currentChildItems.iterator();
+            while (currentIter.hasNext()) {
+                final FolderTreeItem item = (FolderTreeItem)currentIter.next();
+                removeItem(item);
+                currentIter.remove();
+                item.dispose();
+            }
+        }
+    }
+
     private class FolderPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(final PropertyChangeEvent evt) {
-            if (folder.getName() != null) {
-                setText(folder.getName());
-            } else {
-                setText(folder.getFullName());
-            }
-
-            setTitle(folder.getFullName());
-
-            final List/*<String>*/ updatedChildren = new ArrayList(folder.getSubFolders());
-            final List/*<FolderTreeItem>*/ currentChildItems = new ArrayList/*<FolderTreeItem>*/();
-            final List/*<String>*/ currentChildNames = new ArrayList/*<String>*/();
-            for (int i=0; i < getChildCount(); i++) {
-                final FolderTreeItem item = getFolderTreeItemChild(i);
-                currentChildItems.add(item);
-                currentChildNames.add(item.getFolderFullName());
-            }
-
-            Collections.sort(updatedChildren);
-
-            // TODO: Manage these better
-            if (true) {
-                Iterator updateIter = updatedChildren.iterator();
-                while (updateIter.hasNext()) {
-                    String fullName = (String)updateIter.next();
-                    if (!currentChildNames.contains(fullName)) {
-                        final String name = folder.fullNameToName(fullName);
-                        addItem(new FolderTreeItem(client, name, fullName));
-                    }
-                }
-            } else {
-                /* Not needed, they will be added in order
-                Collections.sort(currentChildItems, new Comparator() {
-                    public int compare(final Object o1, final Object o2) {
-                        final FolderTreeItem f1 = (FolderTreeItem)o1;
-                        final FolderTreeItem f2 = (FolderTreeItem)o2;
-                        return f1.getFolderFullName().compareTo(f2.getFolderFullName());
-                    }
-                });
-                */
-
-                // remove any old folder items
-                Iterator currentIter = currentChildItems.iterator();
-                while (currentIter.hasNext()) {
-                    final FolderTreeItem item = (FolderTreeItem)currentIter.next();
-                    removeItem(item);
-                    currentIter.remove();
-                    item.dispose();
-                }
-            }
+            updateFolder();
         }
     }
 }

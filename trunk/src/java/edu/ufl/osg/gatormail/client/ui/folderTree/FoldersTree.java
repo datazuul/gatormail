@@ -20,14 +20,15 @@
 
 package edu.ufl.osg.gatormail.client.ui.folderTree;
 
-import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.core.client.GWT;
-import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
-import edu.ufl.osg.gatormail.client.services.FoldersService;
+import com.google.gwt.user.client.ui.Tree;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
+import edu.ufl.osg.gatormail.client.services.FoldersService;
+import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
 
 /**
  * Widget representing the folderTree in a mailbox.
@@ -50,7 +51,8 @@ public class FoldersTree extends Tree {
                 public void onSuccess(final Object result) {
                     final String[] rootFolders = (String[])result;
                     for (int i=0; i < rootFolders.length; i++) {
-                        final FolderTreeItem item = new FolderTreeItem(client, rootFolders[i]);
+                        final GMFolder folder = client.fetchFolder(rootFolders[i]);
+                        final FolderTreeItem item = new FolderTreeItem(client, folder);
                         addItem(item);
                     }
                 }

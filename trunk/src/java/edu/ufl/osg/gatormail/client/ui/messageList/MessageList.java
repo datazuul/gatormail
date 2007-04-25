@@ -65,6 +65,7 @@ import org.mcarthur.sandy.gwt.event.list.client.FilteredEventList;
 import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
 import org.mcarthur.sandy.gwt.event.list.client.ListEventListener;
 import org.mcarthur.sandy.gwt.event.list.client.RangedEventList;
+import org.mcarthur.sandy.gwt.event.list.property.client.ObservingEventList;
 import org.mcarthur.sandy.gwt.table.client.ObjectListTable;
 import org.mcarthur.sandy.gwt.table.client.TableBodyGroup;
 import org.mcarthur.sandy.gwt.table.client.TableCell;
@@ -89,7 +90,7 @@ import java.util.Map;
  *
  * @author Sandy McArthur
  */
-public class MessageList extends Composite {
+public final class MessageList extends Composite {
     private static final Command NOT_IMPLEMENTED_COMMAND = new NotImplementedCommand();
     private static final NotImplementedClickListener NOT_IMPLEMENTED_CLICK_LISTENER = new NotImplementedClickListener();
 
@@ -102,7 +103,7 @@ public class MessageList extends Composite {
     private final ObjectListTable oltSummary;
     private final SummaryMessageRenderer oltSummaryRenderer;
 
-    private final EventList/*<GMMessage>*/ messages = EventLists.eventList(); // TODO: switch this to a "PartialObservingEventList"
+    private final EventList/*<GMMessage>*/ messages = new ObservingEventList(); // TODO: switch this to a "PartialObservingEventList" that only observes the current view
     private final EventList/*<GMMessage>*/ messagesReversed = EventLists.reverseEventList(messages);
     private final FilteredEventList/*<GMMessage>*/ messagesFiltered = EventLists.filteredEventList(messagesReversed);
     private final RangedEventList/*<GMMessage>*/ messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);

@@ -22,9 +22,10 @@ package edu.ufl.osg.gatormail.client.ui.folderTree;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.user.client.ui.TreeListener;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.services.FoldersService;
@@ -41,7 +42,31 @@ public class FoldersTree extends Tree {
 
     public FoldersTree(final GatorMailWidget client) {
         this.client = client;
-        DeferredCommand.add(new FetchRootFoldersCommand());
+        addItem(new AccountTreeItem(client, client.getAccount()));
+
+        addTreeListener(new TreeListener() {
+            public void onTreeItemSelected(final TreeItem item) {
+                if (item instanceof AccountTreeItem) {
+                    GWT.log("TODO: AccountView not yet implemented.", null);
+
+                } else if (item instanceof FolderTreeItem) {
+                    final FolderTreeItem folderTreeItem = (FolderTreeItem)item;
+                    final GMFolder folder = folderTreeItem.getFolder();
+                    if (folder.isHoldsMessages()) {
+                        client.openFolder(folder);
+                    }
+
+                } else {
+                    final ClassCastException cce = new ClassCastException(GWT.getTypeName(item));
+                    GWT.log("Unknown TreeItem type: " + GWT.getTypeName(item), cce);
+                    throw cce;
+                }
+            }
+
+            public void onTreeItemStateChanged(final TreeItem item) {
+                // TODO: use this to defer some loading.
+            }
+        });
     }
 
     private class FetchRootFoldersCommand implements Command {

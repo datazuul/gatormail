@@ -25,7 +25,6 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.HistoryListener;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -44,9 +43,11 @@ import edu.ufl.osg.gatormail.client.ui.HeaderPanel;
 import edu.ufl.osg.gatormail.client.ui.NavPanel;
 import edu.ufl.osg.gatormail.client.ui.message.MessageView;
 import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
+import edu.ufl.osg.gatormail.client.ui.welcome.WelcomeView;
 import org.mcarthur.sandy.gwt.event.property.client.PropertyChangeSource;
 import org.mcarthur.sandy.gwt.login.client.LoginPanel;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
@@ -204,6 +205,9 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
         hp.add(mainPanel);
 
         sp.setWidget(hp);
+
+        loadWelcome();
+        preloadInbox();
     }
 
     private void login(final String username, final String password) {
@@ -214,7 +218,6 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 if (loginResult.isSuccess()) {
                     setAccount(loginResult.getAccount());
                     loadMainView();
-                    loadWelcome();
                 }
             }
 
@@ -229,23 +232,46 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
         final VerticalPanel vp = new VerticalPanel();
         vp.setWidth("16.6ex");
 
-        tabs.add(new HTML("This is alpha quality code.<br/>Expect it to be buggy and slow.<br/>Select on a folder on the left."), "Welcome");
+        //tabs.add(new HTML("This is alpha quality code.<br/>Expect it to be buggy and slow.<br/>Select on a folder on the left."), "Welcome");
+        tabs.add(new WelcomeView(this), "Welcome");
         tabs.selectTab(0);
+    }
+
+    private void preloadInbox() {
+        // This silly-ness is because we don't know the folder's name until an update comes in
+        final GMFolder inboxFolder = fetchFolder(account.getInboxFolderName());
+        inboxFolder.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
+                if (inboxFolder.getName() != null) {
+                    openFolder(inboxFolder, false);
+                    inboxFolder.removePropertyChangeListener(this);
+                }
+            }
+        });
     }
 
     private Map openFolders = new HashMap();
 
     public void openFolder(final GMFolder gmFolder) {
+        openFolder(gmFolder, true);
+    }
+
+    private void openFolder(final GMFolder gmFolder, final boolean selectNow) {
         MessageList messageList = (MessageList)openFolders.get(gmFolder.getFullName());
         if (messageList != null) {
-            tabs.selectTab(tabs.getWidgetIndex(messageList));
+            if (selectNow) {
+                tabs.selectTab(tabs.getWidgetIndex(messageList));
+                History.newItem(gmFolder.getFullName());
+            }
         } else {
             messageList = new MessageList(this, gmFolder);
             openFolders.put(gmFolder.getFullName(), messageList);
             tabs.add(messageList, gmFolder.getName());
-            tabs.selectTab(tabs.getWidgetIndex(messageList));
+            if (selectNow) {
+                tabs.selectTab(tabs.getWidgetIndex(messageList));
+                History.newItem(gmFolder.getFullName());
+            }
         }
-        History.newItem(gmFolder.getFullName());
     }
 
     private Map openMessages = new HashMap();

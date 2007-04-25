@@ -21,18 +21,15 @@
 package edu.ufl.osg.gatormail.client.ui;
 
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.TreeItem;
-import com.google.gwt.user.client.ui.TreeListener;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.HTML;
-import edu.ufl.osg.gatormail.client.ui.folderTree.FolderTreeItem;
-import edu.ufl.osg.gatormail.client.ui.folderTree.FoldersTree;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
+import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
+import edu.ufl.osg.gatormail.client.model.FavoritesAccount;
+import edu.ufl.osg.gatormail.client.ui.folderTree.FoldersTree;
 
 public class NavPanel extends Composite {
     private final VerticalPanel panel = new VerticalPanel();
@@ -66,24 +63,14 @@ public class NavPanel extends Composite {
 
         panel.add(new HTML("&nbsp;"));
 
-        panel.add(new Label("Favorites:"));
-        panel.add(new HTML("&nbsp;"));
-
+        if (client.getAccount() instanceof FavoritesAccount) {
+            panel.add(new Label("Favorites:"));
+            panel.add(new HTML("&nbsp;"));
+        }
+        
         panel.add(new Label("Account:"));
 
         folders = new FoldersTree(client);
-        folders.addTreeListener(new TreeListener() {
-            public void onTreeItemSelected(final TreeItem item) {
-                final FolderTreeItem folderTreeItem = (FolderTreeItem)item;
-                final GMFolder folder = folderTreeItem.getFolder();
-                if (folder.isHoldsMessages()) {
-                    client.openFolder(folder);
-                }
-            }
-
-            public void onTreeItemStateChanged(final TreeItem item) {
-            }
-        });
 
         panel.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
         panel.add(folders);

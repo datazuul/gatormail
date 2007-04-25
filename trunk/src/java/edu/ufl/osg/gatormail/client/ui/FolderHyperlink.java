@@ -81,11 +81,13 @@ public class FolderHyperlink extends Hyperlink {
         }
 
         if (unreadCount > 0) {
-            text += " (" + unreadCount + ")";
+            //text += " (" + unreadCount + ")";
+            text += "<small> (" + unreadCount + ")</small>";
             title += ", " + unreadCount + " unread";
         }
 
-        setText(text);
+        //setText(text);
+        setHTML(text);
         setTitle(title);
     }
 

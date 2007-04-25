@@ -32,17 +32,16 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * TreeItem for a GMFolder.
+ * TreeItem for a {@link GMFolder}.
  *
  * @author Sandy McArthur
  */
 public class FolderTreeItem extends TreeItem {
 
     private final GatorMailWidget client;
-    private GMFolder folder;
+    private final GMFolder folder;
     private final FolderPropertyChangeListener folderPropertyChangeListener = new FolderPropertyChangeListener();
 
-    // TODO: make this take a GMFolder instead of a name
     public FolderTreeItem(final GatorMailWidget client, final GMFolder folder) {
         super(pickName(folder));
         this.client = client;

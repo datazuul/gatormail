@@ -20,16 +20,14 @@
 
 package edu.ufl.osg.gatormail.client.ui.folderTree;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.TreeItem;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.services.FoldersService;
-import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,9 +39,10 @@ import java.util.List;
 public class FolderTreeItem extends TreeItem {
 
     private final GatorMailWidget client;
-    private GMFolder gmFolder;
-    private FetchInfoCommand command;
+    private GMFolder folder;
+    private final FolderPropertyChangeListener folderPropertyChangeListener = new FolderPropertyChangeListener();
 
+    // TODO: make this take a GMFolder instead of a name
     public FolderTreeItem(final GatorMailWidget client, final String name) {
         this(client, name, name);
     }
@@ -51,51 +50,82 @@ public class FolderTreeItem extends TreeItem {
     public FolderTreeItem(final GatorMailWidget client, final String name, final String fullName) {
         super(name);
         this.client = client;
-        command = new FetchInfoCommand(fullName);
-        DeferredCommand.add(command);
+        folder = client.fetchFolder(fullName);
+
+        folder.addPropertyChangeListener(folderPropertyChangeListener);
     }
 
+    public FolderTreeItem getFolderTreeItemChild(final int index) {
+        return (FolderTreeItem)getChild(index);
+    }
 
     public GMFolder getFolder() {
-        return gmFolder;
+        return folder;
     }
 
     public String getFolderName() {
-        return gmFolder.getName();
+        return getFolder().getName();
     }
 
     public String getFolderFullName() {
-        return gmFolder.getFullName();
+        return getFolder().getFullName();
     }
 
-    private class FetchInfoCommand implements Command {
-        private final String name;
+    private void dispose() {
+        folder.removePropertyChangeListener(folderPropertyChangeListener);
+    }
 
-        public FetchInfoCommand(final String name) {
-            this.name = name;
-        }
+    private class FolderPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            if (folder.getName() != null) {
+                setText(folder.getName());
+            } else {
+                setText(folder.getFullName());
+            }
 
-        public void execute() {
-            final FoldersServiceAsync service = FoldersService.App.getInstance();
-            service.getFolderInfo(client.getAccount(), name, new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    gmFolder = (GMFolder)result;
-                    setText(gmFolder.getName());
-                    setTitle(gmFolder.getFullName());
+            setTitle(folder.getFullName());
 
-                    final List subFolders = gmFolder.getSubFolders();
-                    final Iterator iter = subFolders.iterator();
-                    while (iter.hasNext()) {
-                        final String fullName = (String)iter.next();
-                        final String name = gmFolder.fullNameToName(fullName);
+            final List/*<String>*/ updatedChildren = new ArrayList(folder.getSubFolders());
+            final List/*<FolderTreeItem>*/ currentChildItems = new ArrayList/*<FolderTreeItem>*/();
+            final List/*<String>*/ currentChildNames = new ArrayList/*<String>*/();
+            for (int i=0; i < getChildCount(); i++) {
+                final FolderTreeItem item = getFolderTreeItemChild(i);
+                currentChildItems.add(item);
+                currentChildNames.add(item.getFolderFullName());
+            }
+
+            Collections.sort(updatedChildren);
+
+            // TODO: Manage these better
+            if (true) {
+                Iterator updateIter = updatedChildren.iterator();
+                while (updateIter.hasNext()) {
+                    String fullName = (String)updateIter.next();
+                    if (!currentChildNames.contains(fullName)) {
+                        final String name = folder.fullNameToName(fullName);
                         addItem(new FolderTreeItem(client, name, fullName));
                     }
+                }
+            } else {
+                /* Not needed, they will be added in order
+                Collections.sort(currentChildItems, new Comparator() {
+                    public int compare(final Object o1, final Object o2) {
+                        final FolderTreeItem f1 = (FolderTreeItem)o1;
+                        final FolderTreeItem f2 = (FolderTreeItem)o2;
+                        return f1.getFolderFullName().compareTo(f2.getFolderFullName());
+                    }
+                });
+                */
 
+                // remove any old folder items
+                Iterator currentIter = currentChildItems.iterator();
+                while (currentIter.hasNext()) {
+                    final FolderTreeItem item = (FolderTreeItem)currentIter.next();
+                    removeItem(item);
+                    currentIter.remove();
+                    item.dispose();
                 }
-                public void onFailure(final Throwable caught) {
-                    GWT.log("Error fetching info of " + name, caught);
-                }
-            });
+            }
         }
     }
 }

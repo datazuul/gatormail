@@ -70,32 +70,32 @@ public class PrimaryMailboxPanel extends Composite {
             panel.clear();
 
             if (account.getInboxFolderName() != null) {
-                final GMFolder inbox = new GMFolder(account.getInboxFolderName());
-                client.updateInfo(inbox);
+                final GMFolder inbox = client.fetchFolder(account.getInboxFolderName());
+                client.requestUpdate(inbox);
                 panel.add(new FolderHyperlink(client, inbox, "INBOX"));
             }
 
             if (account.getDraftsFolderName() != null) {
-                final GMFolder drafts = new GMFolder(account.getDraftsFolderName());
-                client.updateInfo(drafts);
+                final GMFolder drafts = client.fetchFolder(account.getDraftsFolderName());
+                client.requestUpdate(drafts);
                 panel.add(new FolderHyperlink(client, drafts, "Drafts"));
             }
 
             if (account.getJunkFolderName() != null) {
-                final GMFolder junk = new GMFolder(account.getJunkFolderName());
-                client.updateInfo(junk);
+                final GMFolder junk = client.fetchFolder(account.getJunkFolderName());
+                client.requestUpdate(junk);
                 panel.add(new FolderHyperlink(client, junk, "Junk"));
             }
 
             if (account.getSentFolderName() != null) {
-                final GMFolder sent = new GMFolder(account.getSentFolderName());
-                client.updateInfo(sent);
+                final GMFolder sent = client.fetchFolder(account.getSentFolderName());
+                client.requestUpdate(sent);
                 panel.add(new FolderHyperlink(client, sent, "Sent"));
             }
 
             if (account.getTrashFolderName() != null) {
-                final GMFolder trash = new GMFolder(account.getTrashFolderName());
-                client.updateInfo(trash);
+                final GMFolder trash = client.fetchFolder(account.getTrashFolderName());
+                client.requestUpdate(trash);
                 panel.add(new FolderHyperlink(client, trash, "Trash"));
             }
 

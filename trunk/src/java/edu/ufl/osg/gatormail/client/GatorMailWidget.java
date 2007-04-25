@@ -72,6 +72,8 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
 
     private Account account;
 
+    private final Map/*<String, GMFolder>*/ folders = new HashMap/*<String, GMFolder>*/();
+
     public GatorMailWidget() {
         sp.addStyleName("gm-GatorMailWidget");
         sp.setWidth("100%");
@@ -126,7 +128,7 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
         return false;
     }
 
-    public void updateInfo(final GMFolder folder) {
+    public void requestUpdate(final GMFolder folder) {
         final FoldersServiceAsync service = FoldersService.App.getInstance();
         service.updateFolder(account, folder, new AsyncCallback() {
             public void onSuccess(final Object result) {
@@ -137,6 +139,45 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 GWT.log("Problem updating info for: " + folder, caught);
             }
         });
+    }
+
+    /**
+     * Return the primary instance of a GMFolder for a <code>fullName</code>.
+     *
+     * @param fullName the full folder name.
+     * @return the primary instance.
+     * @see #updateFolder(edu.ufl.osg.gatormail.client.model.GMFolder)
+     */
+    public GMFolder fetchFolder(final String fullName) {
+        GMFolder folder = (GMFolder)folders.get(fullName);
+
+        if (folder == null) {
+            folder = new GMFolder(fullName);
+            folders.put(fullName, folder);
+            requestUpdate(folder);
+        }
+
+        return folder;
+    }
+
+    /**
+     * Apply update to the primary instance for a GMFolder.
+     *
+     * @param folderUpdate fresh GMFolder information.
+     * @return the preferred instance of a GMFolder.
+     */
+    public GMFolder updateFolder(final GMFolder folderUpdate) {
+        GMFolder folder = (GMFolder)folders.get(folderUpdate.getFullName());
+
+        if (folder == null) {
+            folder = folderUpdate;
+            folders.put(folderUpdate.getFullName(), folder);
+        } else {
+            // apply new info
+            folder.applyUpdate(folderUpdate);
+        }
+
+        return folder;
     }
 
     private final VerticalPanel mainPanel = new VerticalPanel();

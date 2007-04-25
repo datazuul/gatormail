@@ -113,7 +113,8 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
 
         try {
             for (final javax.mail.Folder subFolder : folder.list()) {
-                gmFolder.addSubFolder(subFolder.getURLName().toString());
+                //gmFolder.addSubFolder(subFolder.getURLName().toString());
+                gmFolder.addSubFolder(subFolder.getFullName());
             }
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -175,11 +176,10 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
             throw new SerializableException(e.getMessage());
         }
 
-        final GMFolder gmFolder = new GMFolder();
+        final GMFolder gmFolder = new GMFolder(folder.getFullName());
 
         gmFolder.setUrlName(urlName);
         gmFolder.setName(folder.getName());
-        gmFolder.setFullName(folder.getFullName());
 
         try {
             if (!folder.exists()) {
@@ -222,7 +222,8 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
 
         try {
             for (final javax.mail.Folder subFolder : folder.list()) {
-                gmFolder.addSubFolder(subFolder.getURLName().toString());
+                //gmFolder.addSubFolder(subFolder.getURLName().toString());
+                gmFolder.addSubFolder(subFolder.getFullName());
             }
         } catch (MessagingException e) {
             e.printStackTrace();
@@ -284,12 +285,15 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
         }
         final String[] folders = new String[rootFolders.length];
         for (int i=0; i < rootFolders.length; i++) {
+            folders[i] = rootFolders[i].getFullName();
+            /* XXX? why did I do this?
             try {
                 folders[i] = rootFolders[i].getURLName().toString();
             } catch (MessagingException e) {
                 e.printStackTrace();
                 throw new SerializableException(e.getMessage());
             }
+            */
         }
         return folders;
     }

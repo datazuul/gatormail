@@ -512,7 +512,7 @@ public class MessageList extends Composite {
                 }
             });
             // update the folder info
-            client.updateInfo(folder);
+            client.requestUpdate(folder);
         }
     }
 

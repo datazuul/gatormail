@@ -18,33 +18,37 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.ui.messageList;
+package edu.ufl.osg.gatormail.client.ui;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 /**
- * Displays the name of a Folder.
+ * Displays the full name of a {@link GMFolder}.
  *
  * @author Sandy McArthur
  */
-public class MessageListFolderNameLabel extends Composite {
+public class FolderFullNameLabel extends Composite {
     private final HorizontalPanel hp = new HorizontalPanel();
     private final Label folderName = new Label();
 
     private final GMFolder folder;
+    private final FolderNameChangeListener folderNameChangeListener = new FolderNameChangeListener();
 
 
-    public MessageListFolderNameLabel(final GMFolder folder) {
+    public FolderFullNameLabel(final GMFolder folder) {
         assert folder != null;
         this.folder = folder;
 
         initWidget(hp);
-        addStyleName("gm-MessageListFolderNameLabel");
+        addStyleName("gm-FolderFullNameLabel");
 
-        folderName.addStyleName("gm-MessageList-FolderName");
+        folderName.addStyleName("gm-FolderFullName");
 
         hp.add(folderName);
     }
@@ -53,14 +57,24 @@ public class MessageListFolderNameLabel extends Composite {
     protected void onAttach() {
         super.onAttach();
 
+        folder.addPropertyChangeListener(folderNameChangeListener);
+
         updateFolderLabel();
     }
 
     protected void onDetach() {
         super.onDetach();
+
+        folder.removePropertyChangeListener(folderNameChangeListener);
     }
 
     private void updateFolderLabel() {
         folderName.setText(folder.getFullName());
+    }
+
+    private class FolderNameChangeListener implements PropertyChangeListener {
+        public void propertyChange(final PropertyChangeEvent evt) {
+            updateFolderLabel();
+        }
     }
 }

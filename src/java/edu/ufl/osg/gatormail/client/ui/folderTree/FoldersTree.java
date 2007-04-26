@@ -47,7 +47,8 @@ public class FoldersTree extends Tree {
         addTreeListener(new TreeListener() {
             public void onTreeItemSelected(final TreeItem item) {
                 if (item instanceof AccountTreeItem) {
-                    GWT.log("TODO: AccountView not yet implemented.", null);
+                    final AccountTreeItem accountTreeItem = (AccountTreeItem)item;
+                    client.openAccount(accountTreeItem.getAccount());
 
                 } else if (item instanceof FolderTreeItem) {
                     final FolderTreeItem folderTreeItem = (FolderTreeItem)item;

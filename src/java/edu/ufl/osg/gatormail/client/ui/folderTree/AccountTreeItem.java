@@ -46,6 +46,10 @@ public class AccountTreeItem extends TreeItem {
         updateAccount();
     }
 
+    public Account getAccount() {
+        return account;
+    }
+
     private void updateAccount() {
         setText(account.getAccountName());
 

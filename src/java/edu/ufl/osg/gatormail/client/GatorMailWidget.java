@@ -41,6 +41,7 @@ import edu.ufl.osg.gatormail.client.services.LoginService;
 import edu.ufl.osg.gatormail.client.services.LoginServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.HeaderPanel;
 import edu.ufl.osg.gatormail.client.ui.NavPanel;
+import edu.ufl.osg.gatormail.client.ui.account.AccountView;
 import edu.ufl.osg.gatormail.client.ui.message.MessageView;
 import edu.ufl.osg.gatormail.client.ui.messageList.MessageList;
 import edu.ufl.osg.gatormail.client.ui.welcome.WelcomeView;
@@ -276,10 +277,12 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
     }
 
     private Map openMessages = new HashMap();
+
     public void openMessage(final GMMessage message) {
         MessageView mvp = (MessageView)openMessages.get(message);
         if (mvp != null) {
             tabs.selectTab(tabs.getWidgetIndex(mvp));
+
         } else {
             mvp = new MessageView(this, message);
             openMessages.put(message, mvp);
@@ -292,6 +295,21 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
             }
             tabs.add(mvp, tabText); // TODO: make this smarter
             tabs.selectTab(tabs.getWidgetIndex(mvp));
+        }
+    }
+
+    private Map/*<Account, AccountView>*/ openAccounts = new HashMap/*<Account, AccountView>*/();
+
+    public void openAccount(final Account account) {
+        AccountView av = (AccountView)openAccounts.get(account);
+        if (av != null) {
+            tabs.selectTab(tabs.getWidgetIndex(av));
+
+        } else {
+            av = new AccountView(this, account);
+            openAccounts.put(account, av);
+            tabs.add(av, account.getAccountName());
+            tabs.selectTab(tabs.getWidgetIndex(av));
         }
     }
 

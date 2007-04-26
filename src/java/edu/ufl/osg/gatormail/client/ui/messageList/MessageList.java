@@ -55,6 +55,7 @@ import edu.ufl.osg.gatormail.client.services.MessageListServiceAsync;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.FlaggedLabel;
+import edu.ufl.osg.gatormail.client.ui.FolderFullNameLabel;
 import edu.ufl.osg.gatormail.client.ui.FromAddressesLabel;
 import edu.ufl.osg.gatormail.client.ui.ReceivedDateLabel;
 import edu.ufl.osg.gatormail.client.ui.SelectionCheckBox;
@@ -126,10 +127,10 @@ public final class MessageList extends Composite {
         headerRow.addStyleName("gm-MessageList-HeaderRow");
         headerRow.setWidth("100%");
 
-        final MessageListFolderNameLabel folderNameLabel = new MessageListFolderNameLabel(folder);
+        final FolderFullNameLabel folderFullNameLabel = new FolderFullNameLabel(folder);
         headerRow.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
-        headerRow.add(folderNameLabel);
-        headerRow.setCellWidth(folderNameLabel, "100%");
+        headerRow.add(folderFullNameLabel);
+        headerRow.setCellWidth(folderFullNameLabel, "100%");
 
 
         final TabBar viewTabs = new TabBar();

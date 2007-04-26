@@ -20,15 +20,14 @@
 
 package edu.ufl.osg.gatormail.client.ui;
 
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.Timer;
+import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 
-import java.util.Date;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import java.util.Date;
 
 /**
  * Renders a Date from a message.
@@ -115,7 +114,7 @@ public abstract class DateLabel extends Composite {
         today.setSeconds(0);
         if (date.before(today)) {
             // Mon Day
-            final String[] months = {"Jan","Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+            final String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
             return months[date.getMonth()] + " " + date.getDate();
         }
 

@@ -108,7 +108,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
         //props.setProperty("mail.debug", "true");
 
         if (props.getProperty("mail.store.protocol") == null) {
-            props.setProperty("mail.store.protocol", "imaps"); // XXX: why doesn't 'imaps' work?
+            props.setProperty("mail.store.protocol", "imaps");
         }
         props.setProperty("mail." + props.getProperty("mail.store.protocol") + ".host", "imap.ufl.edu");
         final String port;

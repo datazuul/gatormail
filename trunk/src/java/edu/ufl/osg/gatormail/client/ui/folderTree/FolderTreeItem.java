@@ -97,7 +97,7 @@ public class FolderTreeItem extends TreeItem {
 
         // TODO: Manage these better
         if (true) {
-            Iterator updateIter = updatedChildren.iterator();
+            final Iterator updateIter = updatedChildren.iterator();
             while (updateIter.hasNext()) {
                 final String fullName = (String)updateIter.next();
                 if (!currentChildNames.contains(fullName)) {
@@ -117,7 +117,7 @@ public class FolderTreeItem extends TreeItem {
             */
 
             // remove any old folder items
-            Iterator currentIter = currentChildItems.iterator();
+            final Iterator currentIter = currentChildItems.iterator();
             while (currentIter.hasNext()) {
                 final FolderTreeItem item = (FolderTreeItem)currentIter.next();
                 removeItem(item);

@@ -94,7 +94,8 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 if (result != null) {
                     final Account account = (Account)result;
                     setAccount(account);
-                    login(account.getUsername(), account.getPassword());
+                    //login(account.getUsername(), account.getPassword());
+                    loadMainView();
                 }
             }
             public void onFailure(final Throwable caught) {

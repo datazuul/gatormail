@@ -472,13 +472,13 @@ public final class MessageList extends Composite {
             final MessageListServiceAsync service = MessageListService.App.getInstance();
             final long startUID;
             final long endUID;
-            if (messages.size() > 0) {
+            if (messages.isEmpty()) {
+                startUID = endUID = 0;
+            } else {
                 final GMMessage first = (GMMessage)messages.get(0);
                 final GMMessage last = (GMMessage)messages.get(messages.size()-1);
                 startUID = first.getUid();
                 endUID = last.getUid();
-            } else {
-                startUID = endUID = 0;
             }
             service.fetchMessageListChanges(client.getAccount(), folder, startUID, endUID, messages.size(), new AsyncCallback() {
                 public void onSuccess(final Object result) {
@@ -550,7 +550,15 @@ public final class MessageList extends Composite {
 
             service.fetchMessages(client.getAccount(), folder, new AsyncCallback() {
                 public void onSuccess(final Object result) {
-                    messages.addAll((List)result);
+                    final List allMessages = (List)result;
+                    // RPC deserialization takes time too, finish processing
+                    // this on the next browser event tick to help avoid SSW.
+                    DeferredCommand.add(new Command() {
+                        public void execute() {
+                            // XXX? consider splitting this into a few commands, last elements first
+                            messages.addAll(allMessages);
+                        }
+                    });
                 }
 
                 public void onFailure(final Throwable caught) {
@@ -855,7 +863,7 @@ public final class MessageList extends Composite {
 
             final TableDataCell detailCell = summaryRow.newTableDataCell();
             detailCell.addStyleName("gm-MessageList-td-Summary");
-            detailCell.add(new HTML("&nbsp;")); // TODO: convert to detail triangle
+            detailCell.add(new HTML("&nbsp;")); // TODO? convert to detail triangle
             summaryRow.add(detailCell);
 
             final TableDataCell summaryCell = summaryRow.newTableDataCell();

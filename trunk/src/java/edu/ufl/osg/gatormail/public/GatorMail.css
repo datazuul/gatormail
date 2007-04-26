@@ -19,15 +19,95 @@ body {
     color: red;
 }
 
+/* Outer Mail Client Controls */
+.gm-MailClient-TabBar {
+    background-color: #C3D9FF;
+    font-size: medium;
+}
+
+.gm-MailClient-TabBar .gwt-TabBarFirst {
+    height: 100%;
+    border-bottom: 1px solid #87B3FF;
+    padding-left: 3px;
+}
+
+.gm-MailClient-TabBar .gwt-TabBarRest {
+    border-bottom: 1px solid #87B3FF;
+    padding-right: 3px;
+}
+
+.gm-MailClient-TabBar .gwt-TabBarItem {
+    border-top: 1px solid #C3D9FF;
+    border-bottom: 1px solid #87B3FF;
+    padding: 3px;
+    cursor: pointer;
+    cursor: hand;
+    text-decoration: underline;
+}
+
+.gm-MailClient-TabBar .gwt-TabBarItem-selected {
+    font-weight: bold;
+    background-color: #E8EEF7;
+    border-top: 1px solid #87B3FF;
+    border-left: 1px solid #87B3FF;
+    border-right: 1px solid #87B3FF;
+    border-bottom: 1px solid #E8EEF7;
+    padding: 2px;
+    cursor: default;
+    text-decoration: none;
+}
+
+/* Message List */
 .gm-MessageList-HeaderRow {
     background-color: #FFF;
     border-bottom: 1px solid #87B3FF;
 }
 
 /* Message List Panel Folder Name */
-.gm-MessageList-HeaderRow .gm-MessageList-FolderName {
+.gm-MessageList-HeaderRow .gm-FolderFullName {
     font-size: larger;
     padding: 0.5ex;
+}
+
+.gm-MessageList .gwt-TabBar {
+    padding-top: 0.3ex;
+    /*background-color: #C3D9FF;*/
+    background-color: #FFF;
+    font-size: larger;
+}
+
+.gm-MessageList .gwt-TabBar .gwt-TabBarFirst {
+    height: 100%;
+    /*border-bottom: 1px solid #87B3FF;*/
+    padding-left: 3px;
+}
+
+.gm-MessageList .gwt-TabBar .gwt-TabBarRest {
+    /*border-bottom: 1px solid #87B3FF;*/
+    padding-right: 3px;
+}
+
+.gm-MessageList .gwt-TabBar .gwt-TabBarItem {
+    border-top: 1px solid #C3D9FF;
+    /*border-bottom: 1px solid #87B3FF;*/
+    border-left: 1px solid #C3D9FF;
+    border-right: 1px solid #C3D9FF;
+    padding: 2px;
+    cursor: pointer;
+    cursor: hand;
+    text-decoration: underline;
+}
+
+.gm-MessageList .gwt-TabBar .gwt-TabBarItem-selected {
+    font-weight: bold;
+    background-color: #E8EEF7;
+    border-top: 1px solid #87B3FF;
+    border-left: 1px solid #87B3FF;
+    border-right: 1px solid #87B3FF;
+    /*border-bottom: 1px solid #E8EEF7;*/
+    padding: 2px;
+    cursor: default;
+    text-decoration: none;
 }
 
 .gm-MessageList-ButtonsRow, .gm-MessageList-SelectRow {
@@ -139,6 +219,56 @@ body {
     white-space:pre;
 }
 
+/* Account View */
+.gm-AccountView-HeaderRow {
+    font-size: larger;
+    padding: 0.5ex;    
+}
+
+.gm-AccountView .gwt-TabBar {
+    padding-top: 0.3ex;
+    /*background-color: #C3D9FF;*/
+    background-color: #FFF;
+}
+
+.gm-AccountView .gwt-TabBar .gwt-TabBarFirst {
+    height: 100%;
+    /*border-bottom: 1px solid #87B3FF;*/
+    padding-left: 3px;
+}
+
+.gm-AccountView .gwt-TabBar .gwt-TabBarRest {
+    /*border-bottom: 1px solid #87B3FF;*/
+    padding-right: 3px;
+}
+
+.gm-AccountView .gwt-TabBar .gwt-TabBarItem {
+    border-top: 1px solid #C3D9FF;
+    /*border-bottom: 1px solid #87B3FF;*/
+    border-left: 1px solid #C3D9FF;
+    border-right: 1px solid #C3D9FF;
+    padding: 2px;
+    cursor: pointer;
+    cursor: hand;
+    text-decoration: underline;
+}
+
+.gm-AccountView .gwt-TabBar .gwt-TabBarItem-selected {
+    font-weight: bold;
+    background-color: #E8EEF7;
+    border-top: 1px solid #87B3FF;
+    border-left: 1px solid #87B3FF;
+    border-right: 1px solid #87B3FF;
+    /*border-bottom: 1px solid #E8EEF7;*/
+    padding: 2px;
+    cursor: default;
+    text-decoration: none;
+}
+
+.gm-AccountView .gm-SummaryPanel {
+    padding: 2px;
+}
+
 /* Evetything below here is from GWT's KitchSink demo. */
 .gwt-Tree {
 }
@@ -215,83 +345,3 @@ body {
 }
 
 /* End KitchenSink CSS */
-
-
-.gm-MailClient-TabBar {
-    background-color: #C3D9FF;
-    font-size: medium;
-}
-
-.gm-MailClient-TabBar .gwt-TabBarFirst {
-    height: 100%;
-    border-bottom: 1px solid #87B3FF;
-    padding-left: 3px;
-}
-
-.gm-MailClient-TabBar .gwt-TabBarRest {
-    border-bottom: 1px solid #87B3FF;
-    padding-right: 3px;
-}
-
-.gm-MailClient-TabBar .gwt-TabBarItem {
-    border-top: 1px solid #C3D9FF;
-    border-bottom: 1px solid #87B3FF;
-    padding: 3px;
-    cursor: pointer;
-    cursor: hand;
-    text-decoration: underline;
-}
-
-.gm-MailClient-TabBar .gwt-TabBarItem-selected {
-    font-weight: bold;
-    background-color: #E8EEF7;
-    border-top: 1px solid #87B3FF;
-    border-left: 1px solid #87B3FF;
-    border-right: 1px solid #87B3FF;
-    border-bottom: 1px solid #E8EEF7;
-    padding: 2px;
-    cursor: default;
-    text-decoration: none;
-}
-
-
-.gm-MessageList .gwt-TabBar {
-    padding-top: 0.3ex;
-    /*background-color: #C3D9FF;*/
-    background-color: #FFF;
-    font-size: larger;
-}
-
-.gm-MessageList .gwt-TabBar .gwt-TabBarFirst {
-    height: 100%;
-    /*border-bottom: 1px solid #87B3FF;*/
-    padding-left: 3px;
-}
-
-.gm-MessageList .gwt-TabBar .gwt-TabBarRest {
-    /*border-bottom: 1px solid #87B3FF;*/
-    padding-right: 3px;
-}
-
-.gm-MessageList .gwt-TabBar .gwt-TabBarItem {
-    border-top: 1px solid #C3D9FF;
-    /*border-bottom: 1px solid #87B3FF;*/
-    border-left: 1px solid #C3D9FF;
-    border-right: 1px solid #C3D9FF;
-    padding: 2px;
-    cursor: pointer;
-    cursor: hand;
-    text-decoration: underline;
-}
-
-.gm-MessageList .gwt-TabBar .gwt-TabBarItem-selected {
-    font-weight: bold;
-    background-color: #E8EEF7;
-    border-top: 1px solid #87B3FF;
-    border-left: 1px solid #87B3FF;
-    border-right: 1px solid #87B3FF;
-    /*border-bottom: 1px solid #E8EEF7;*/
-    padding: 2px;
-    cursor: default;
-    text-decoration: none;
-}

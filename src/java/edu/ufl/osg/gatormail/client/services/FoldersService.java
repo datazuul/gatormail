@@ -20,12 +20,12 @@
 
 package edu.ufl.osg.gatormail.client.services;
 
-import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializableException;
-import com.google.gwt.core.client.GWT;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
+import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 
 /**
  * RPC service methods to fetch information about a folder.
@@ -35,8 +35,6 @@ import edu.ufl.osg.gatormail.client.model.Account;
 public interface FoldersService extends RemoteService {
 
     public GMFolder updateFolder(Account account, GMFolder folder) throws SerializableException;
-
-    public GMFolder getFolderInfo(Account account, String folderFullName) throws SerializableException;
 
     /**
      * TODO? move this into the Account object?

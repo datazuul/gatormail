@@ -33,7 +33,5 @@ public interface FoldersServiceAsync {
 
     void updateFolder(Account account, GMFolder folder, AsyncCallback async);
 
-    void getFolderInfo(Account account, String folderFullName, AsyncCallback async);
-
     void getRootFolders(Account account, AsyncCallback async);
 }

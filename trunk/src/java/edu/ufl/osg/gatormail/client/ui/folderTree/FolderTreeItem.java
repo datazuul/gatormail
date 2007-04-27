@@ -84,7 +84,7 @@ public class FolderTreeItem extends TreeItem {
         setText(pickName(getFolder()));
         setTitle(folder.getFullName());
 
-        final List/*<String>*/ updatedChildren = new ArrayList(folder.getSubFolders());
+        final List/*<String>*/ updatedChildren = new ArrayList(folder.getSubFoldersNames());
         final List/*<FolderTreeItem>*/ currentChildItems = new ArrayList/*<FolderTreeItem>*/();
         final List/*<String>*/ currentChildNames = new ArrayList/*<String>*/();
         for (int i=0; i < getChildCount(); i++) {

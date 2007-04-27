@@ -22,11 +22,14 @@ package edu.ufl.osg.gatormail.client.ui.account;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.FavoritesAccount;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.services.FoldersService;
 import edu.ufl.osg.gatormail.client.services.FoldersServiceAsync;
@@ -38,11 +41,13 @@ import org.mcarthur.sandy.gwt.table.client.ObjectListTable;
 import org.mcarthur.sandy.gwt.table.client.TableBodyGroup;
 import org.mcarthur.sandy.gwt.table.client.TableDataCell;
 import org.mcarthur.sandy.gwt.table.client.TableFooterGroup;
+import org.mcarthur.sandy.gwt.table.client.TableHeaderCell;
 import org.mcarthur.sandy.gwt.table.client.TableHeaderGroup;
 import org.mcarthur.sandy.gwt.table.client.TableRow;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +72,7 @@ public class FoldersSummaryPanel extends Composite {
     public FoldersSummaryPanel(final GatorMailWidget client, final Account account) {
         this.client = client;
         this.account = account;
+        olt.addStyleName("gm-FoldersSummary-FoldersTable");
 
         initWidget(vp);
         addStyleName("gm-FoldersSummary");
@@ -79,38 +85,105 @@ public class FoldersSummaryPanel extends Composite {
 
         listener = new FoldersChangeListener(client);
 
-        if (true) {
-            throw new UnsupportedOperationException("Doesn't work yet");
-            
-        } else {
-            // TODO: refactor this so it doesn't leak
-            final FoldersServiceAsync service = FoldersService.App.getInstance();
-            service.getRootFolders(account, new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    final String[] rootFolders = (String[])result;
-                    for (int i=0; i < rootFolders.length; i++) {
-                        final GMFolder folder = client.fetchFolder(rootFolders[i]);
-                        folders.add(folder);
+        // XXX: This isn't fully real-time :-/
+        final FoldersServiceAsync service = FoldersService.App.getInstance();
+        service.getRootFolders(account, new AsyncCallback() {
+            public void onSuccess(final Object result) {
+                final String[] rootFolders = (String[])result;
+                for (int i=0; i < rootFolders.length; i++) {
+                    final GMFolder folder = client.fetchFolder(rootFolders[i]);
+                    if (isAttached()) {
                         folder.addPropertyChangeListener(listener);
                     }
+                    folders.add(folder);
+                    updateFoldersSubFolders(folder);
                 }
-                public void onFailure(final Throwable caught) {
-                    GWT.log("Error fetching Root Folders for " + account, caught);
-                }
-            });
-        }
+            }
+            public void onFailure(final Throwable caught) {
+                GWT.log("Error fetching Root Folders for " + account, caught);
+            }
+        });
     }
 
     protected void onAttach() {
         super.onAttach();
 
-        // TODO: populate folder list table and attach PCL
+        final Iterator iter = folders.iterator();
+        while (iter.hasNext()) {
+            final GMFolder folder = (GMFolder)iter.next();
+            folder.addPropertyChangeListener(listener);
+        }
+
+        updateFolderList();
     }
 
     protected void onDetach() {
         super.onDetach();
 
-        // TODO: clear folder list table and dettach PCL
+        final Iterator iter = folders.iterator();
+        while (iter.hasNext()) {
+            final GMFolder folder = (GMFolder)iter.next();
+            folder.removePropertyChangeListener(listener);
+        }
+    }
+
+    private void updateFolderList() {
+        final List rootFolders = new ArrayList();
+
+        final Iterator iter = folders.iterator();
+        while (iter.hasNext()) {
+            final GMFolder folder = (GMFolder)iter.next();
+            if (folder.getParentFullName() == null) {
+                rootFolders.add(folder);
+            }
+        }
+
+        final Iterator rootIter = rootFolders.iterator();
+        while (rootIter.hasNext()) {
+            final GMFolder rootFolder = (GMFolder)rootIter.next();
+            updateFoldersSubFolders(rootFolder);
+        }
+    }
+
+    private void updateFoldersSubFolders(final GMFolder folder) {
+        final List renderedSubFolders = new ArrayList();
+        final Iterator subFolderIter = folders.iterator();
+        while (subFolderIter.hasNext()) {
+            final GMFolder subFolder = (GMFolder)subFolderIter.next();
+            if (folder.getFullName().equals(subFolder.getParentFullName())) {
+                renderedSubFolders.add(subFolder);
+            }
+        }
+
+        // we have a list of the old sub folder
+
+        // update subfolders that still exist and remove the ones that no longer exits
+        final List subFolderNames = folder.getSubFoldersNames();
+        final Iterator rsfIter = renderedSubFolders.iterator();
+        while (rsfIter.hasNext()) {
+            final GMFolder renderedSubFolder = (GMFolder)rsfIter.next();
+            if (subFolderNames.contains(renderedSubFolder.getFullName())) {
+                subFolderNames.remove(renderedSubFolder.getFullName());
+                updateFoldersSubFolders(renderedSubFolder);
+
+            } else {
+                folders.remove(renderedSubFolder);
+                renderedSubFolder.removePropertyChangeListener(listener);
+            }
+        }
+
+        // subFolderNames is now a list of name sthat needs to be added
+
+        final Iterator sfNIter = subFolderNames.iterator();
+        while (sfNIter.hasNext()) {
+            final String subFolderFullName = (String)sfNIter.next();
+            final GMFolder subFolder = client.fetchFolder(subFolderFullName);
+            if (isAttached()) {
+                subFolder.addPropertyChangeListener(listener);
+            }
+            folders.add(subFolder);
+            updateFoldersSubFolders(subFolder);
+        }
     }
 
     /**
@@ -145,14 +218,43 @@ public class FoldersSummaryPanel extends Composite {
 
             final TableRow tr = bodyGroup.newTableRow();
 
-            final TableDataCell td = tr.newTableDataCell();
-            td.add(new FolderFullNameLabel(folder));
-            tr.add(td);
+            final TableDataCell fullNameCell = tr.newTableDataCell();
+            fullNameCell.add(new FolderFullNameLabel(folder));
+            tr.add(fullNameCell);
+
+            if (account instanceof FavoritesAccount) {
+                // TODO: Make this update the favorites
+                final TableHeaderCell favoriteCell = tr.newTableHeaderCell();
+                favoriteCell.add(new CheckBox());
+                tr.add(favoriteCell);
+            }
+
+            // TODO: Open an edit folder view.
+            final TableDataCell editFolderCell = tr.newTableDataCell();
+            editFolderCell.add(new Label("[edit]"));
+            tr.add(editFolderCell);
 
             bodyGroup.add(tr);
         }
 
         public void renderHeader(final TableHeaderGroup headerGroup) {
+            final TableRow tr = headerGroup.newTableRow();
+
+            final TableHeaderCell folderNameCell = tr.newTableHeaderCell();
+            folderNameCell.add(new Label("Folder Name"));
+            tr.add(folderNameCell);
+
+            if (account instanceof FavoritesAccount) {
+                final TableHeaderCell favoriteCell = tr.newTableHeaderCell();
+                favoriteCell.add(new Label("Favorite"));
+                tr.add(favoriteCell);
+            }
+
+            final TableHeaderCell editFolderCell = tr.newTableHeaderCell();
+            editFolderCell.add(new HTML("&nbsp;"));
+            tr.add(editFolderCell);
+
+            headerGroup.add(tr);
         }
 
         public void renderFooter(final TableFooterGroup footerGroup) {
@@ -169,7 +271,9 @@ public class FoldersSummaryPanel extends Composite {
         public void propertyChange(final PropertyChangeEvent evt) {
             final GMFolder folder = (GMFolder)evt.getSource();
 
-            final List subFolderNames = folder.getSubFolders();
+            updateFoldersSubFolders(folder);
+            /*
+            final List subFolderNames = folder.getSubFoldersNames();
             final Iterator iter = subFolderNames.iterator();
             while (iter.hasNext()) {
                 final String fullName = (String)iter.next();
@@ -177,8 +281,10 @@ public class FoldersSummaryPanel extends Composite {
                 if (!folders.contains(subFolder)) {
                     subFolder.addPropertyChangeListener(this);
                     folders.add(subFolder);
+                    updateFoldersSubFolders(subFolder);
                 }
             }
+            */
         }
     }
 }

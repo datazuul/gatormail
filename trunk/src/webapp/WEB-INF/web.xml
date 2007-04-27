@@ -23,7 +23,7 @@
         <description>Service to fetch Folder information</description>
         <display-name>FoldersService</display-name>
         <servlet-name>FoldersService</servlet-name>
-        <servlet-class>edu.ufl.osg.gatormail.server.folderTree.FoldersServiceImpl</servlet-class>
+        <servlet-class>edu.ufl.osg.gatormail.server.FoldersServiceImpl</servlet-class>
     </servlet>
     <servlet>
         <display-name>MessageListService</display-name>

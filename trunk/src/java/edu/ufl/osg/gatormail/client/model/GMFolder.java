@@ -56,10 +56,12 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
      */
     private String uidValidity;
 
+    private String parentFullName;
+
     /**
      * @gwt.typeArgs <java.lang.String>
      */
-    private List/*<String>*/ subFolders = new ArrayList/*<String>*/();
+    private List/*<String>*/ subFoldersNames = new ArrayList/*<String>*/();
 
     public GMFolder() {
     }
@@ -192,19 +194,36 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
         return fullName.substring(fullName.lastIndexOf(getSeparator()) + 1);
     }
 
-    public void addSubFolder(final String fullName) {
-        subFolders.add(fullName);
-        pcs.firePropertyChange("subFolders", null, subFolders);
+    public String getParentFullName() {
+        return parentFullName;
     }
 
-    public List/*<String>*/ getSubFolders() {
-        return subFolders;
+    public void setParentFullName(final String parentFullName) {
+        final Object old = getParentFullName();
+        this.parentFullName = parentFullName;
+        pcs.firePropertyChange("parentFullName", old, parentFullName);
     }
 
-    public void setSubFolders(final List/*<String>*/ subFolders) {
-        final Object old = getSubFolders();
-        this.subFolders = subFolders;
-        pcs.firePropertyChange("subFolders", old, subFolders);
+    // XXX: I don't like the way subfolders are managed, it makes them hard to observe via PCS
+    public void addSubFolderName(final String fullName) {
+        // don't do the extra work when there aren't any listeners.
+        if (pcs.hasListeners("subFoldersNames")) {
+            final List/*<String>*/ old = new ArrayList(getSubFoldersNames());
+            subFoldersNames.add(fullName);
+            pcs.firePropertyChange("subFoldersNames", old, subFoldersNames);
+        } else {
+            subFoldersNames.add(fullName);
+        }
+    }
+
+    public List/*<String>*/ getSubFoldersNames() {
+        return subFoldersNames;
+    }
+
+    public void setSubFoldersNames(final List/*<String>*/ subFoldersNames) {
+        final Object old = getSubFoldersNames();
+        this.subFoldersNames = subFoldersNames;
+        pcs.firePropertyChange("subFoldersNames", old, subFoldersNames);
     }
 
     public void applyUpdate(final GMFolder folder) throws IllegalArgumentException {
@@ -219,8 +238,10 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
         setName(folder.getName());
         //setFullName(folder.getFullName());
         setNewMessageCount(folder.getNewMessageCount());
+        setParentFullName(folder.getParentFullName());
         setSeparator(folder.getSeparator());
-        setSubFolders(folder.getSubFolders());
+        // XXX: need to sync this more than just set it
+        setSubFoldersNames(folder.getSubFoldersNames());
         setType(folder.getType());
         setUidValidity(folder.getUidValidity());
         setUnreadMessageCount(folder.getUnreadMessageCount());

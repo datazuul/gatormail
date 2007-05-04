@@ -54,6 +54,7 @@ import java.util.Map;
 public class MessageListServiceImpl extends RemoteServiceServlet implements MessageListService {
 
     private static final Map<Flags.Flag, GMFlags.GMFlag> FLAGS_MAP = new HashMap<Flags.Flag, GMFlags.GMFlag>();
+    private static final Map<MessageOrder, Comparator<Message>> MESSAGE_ORDERS = new HashMap<MessageOrder, Comparator<Message>>();
 
     static {
         FLAGS_MAP.put(Flags.Flag.ANSWERED, GMFlags.GMFlag.ANSWERED);
@@ -63,6 +64,26 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
         FLAGS_MAP.put(Flags.Flag.RECENT, GMFlags.GMFlag.RECENT);
         FLAGS_MAP.put(Flags.Flag.SEEN, GMFlags.GMFlag.SEEN);
         FLAGS_MAP.put(Flags.Flag.USER, GMFlags.GMFlag.USER);
+
+        MESSAGE_ORDERS.put(MessageOrder.RECEIVED, new Comparator<Message>() {
+            public int compare(final Message m1, final Message m2) {
+                try {
+                    return m1.getReceivedDate().compareTo(m2.getReceivedDate());
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        MESSAGE_ORDERS.put(MessageOrder.SENT, new Comparator<Message>() {
+            public int compare(final Message m1, final Message m2) {
+                try {
+                    return m1.getSentDate().compareTo(m2.getSentDate());
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     /**
@@ -89,6 +110,92 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
 
         try {
             return getMessages(folder, gmFolder, 0, UIDFolder.LASTUID);
+        } finally {
+            try {
+                folder.close(false);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                //throw new SerializableException(e.getMessage());
+            }
+        }
+    }
+
+    public long[] fetchMessageUids(final Account account, final GMFolder gmFolder, final MessageOrder order) throws SerializableException {
+        final Session session = MessageServiceImpl.fetchSession(account);
+        final Store store = MessageServiceImpl.fetchConnectedStore(session);
+
+        final Folder folder;
+        try {
+            folder = store.getFolder(gmFolder.getFullName());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SerializableException(e.getMessage());
+        }
+
+        try {
+            folder.open(Folder.READ_ONLY);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SerializableException(e.getMessage());
+        }
+
+        try {
+            final UIDFolder uidFolder = (UIDFolder)folder;
+
+            assert folder.isOpen();
+
+            final Message[] messages;
+            try {
+                messages = folder.getMessages();
+
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new SerializableException(e.getMessage());
+            }
+
+            // Prefetch all flags to improve performance.
+            final FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.FLAGS);
+            fp.add(FetchProfile.Item.ENVELOPE);
+            try {
+                folder.fetch(messages, fp);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                // ignore for now
+            }
+
+            // TODO: Why is this sometimes null?
+            //final Comparator<Message> c = MESSAGE_ORDERS.get(order);
+            final Comparator<Message> c = new Comparator<Message>() {
+                public int compare(final Message m1, final Message m2) {
+                    try {
+                        return m1.getReceivedDate().compareTo(m2.getReceivedDate());
+                    } catch (MessagingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+
+            try {
+                Arrays.sort(messages, c);
+            } catch (RuntimeException re) {
+                re.printStackTrace();
+                throw re;
+            }
+
+            final long[] uids = new long[messages.length];
+            for (int i=0; i < messages.length; i++) {
+                final Message message = messages[i];
+
+                try {
+                    uids[i] = (uidFolder.getUID(message));
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                    throw new SerializableException(e.getMessage());
+                }
+            }
+
+            return uids;
         } finally {
             try {
                 folder.close(false);

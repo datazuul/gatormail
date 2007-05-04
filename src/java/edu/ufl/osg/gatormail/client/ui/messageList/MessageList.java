@@ -66,7 +66,6 @@ import org.mcarthur.sandy.gwt.event.list.client.FilteredEventList;
 import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
 import org.mcarthur.sandy.gwt.event.list.client.ListEventListener;
 import org.mcarthur.sandy.gwt.event.list.client.RangedEventList;
-import org.mcarthur.sandy.gwt.event.list.property.client.ObservingEventList;
 import org.mcarthur.sandy.gwt.table.client.ObjectListTable;
 import org.mcarthur.sandy.gwt.table.client.TableBodyGroup;
 import org.mcarthur.sandy.gwt.table.client.TableCell;
@@ -104,20 +103,30 @@ public final class MessageList extends Composite {
     private final ObjectListTable oltSummary;
     private final SummaryMessageRenderer oltSummaryRenderer;
 
-    private final EventList/*<GMMessage>*/ messages = new ObservingEventList(); // TODO: switch this to a "PartialObservingEventList" that only observes the current view
-    private final EventList/*<GMMessage>*/ messagesReversed = EventLists.reverseEventList(messages);
-    private final FilteredEventList/*<GMMessage>*/ messagesFiltered = EventLists.filteredEventList(messagesReversed);
-    private final RangedEventList/*<GMMessage>*/ messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);
-    private final EventList/*<GMMessage>*/ messagesView = messagesPaged;
+    //private final EventList/*<GMMessage>*/ messages = new ObservingEventList(); // TODO: switch this to a "PartialObservingEventList" that only observes the current view
+    private final MessageCache messageCache;
+    private final OrderedMessageList/*<GMMessage>*/ messages;
+    private final EventList/*<GMMessage>*/ messagesReversed;
+    private final FilteredEventList/*<GMMessage>*/ messagesFiltered;
+    private final RangedEventList/*<GMMessage>*/ messagesPaged;
+    private final EventList/*<GMMessage>*/ messagesView;
 
     private final EventList/*<GMMessage>*/ selectedMessages = EventLists.eventList();
-    private final ListEventListener selectedMessagesListener = new SelectedMessagesListEventLisener();
+    private final ListEventListener selectedMessagesListener;
 
     private boolean refreshing = false;
 
     public MessageList(final GatorMailWidget client, final GMFolder gmFolder) {
         this.client = client;
         this.folder = gmFolder;
+
+        messageCache = new MessageCache(client, gmFolder);
+        messages = new OrderedMessageList(messageCache);
+        messagesReversed = EventLists.reverseEventList(messages);
+        messagesFiltered = EventLists.filteredEventList(messagesReversed);
+        messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);
+        messagesView = messagesPaged;
+        selectedMessagesListener = new SelectedMessagesListEventLisener();
 
         initWidget(vp);
         addStyleName("gm-MessageList");
@@ -471,48 +480,62 @@ public final class MessageList extends Composite {
         if (!refreshing) {
             refreshing = true;
             final MessageListServiceAsync service = MessageListService.App.getInstance();
-            final long startUID;
-            final long endUID;
-            if (messages.isEmpty()) {
-                startUID = endUID = 0;
-            } else {
-                final GMMessage first = (GMMessage)messages.get(0);
-                final GMMessage last = (GMMessage)messages.get(messages.size()-1);
-                startUID = first.getUid();
-                endUID = last.getUid();
-            }
-            service.fetchMessageListChanges(client.getAccount(), folder, startUID, endUID, messages.size(), new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    refreshing = false;
-                    final MessageListService.MessageListUpdate update = (MessageListService.MessageListUpdate)result;
-                    assert update.getRequestedStartUID() == startUID;
-                    assert update.getRequestedEndUID() == endUID;
+            if (false) {
+                final long startUID;
+                final long endUID;
+                if (messages.isEmpty()) {
+                    startUID = endUID = 0;
+                } else {
+                    final GMMessage first = (GMMessage)messages.get(0);
+                    final GMMessage last = (GMMessage)messages.get(messages.size()-1);
+                    startUID = first.getUid();
+                    endUID = last.getUid();
+                }
+                service.fetchMessageListChanges(client.getAccount(), folder, startUID, endUID, messages.size(), new AsyncCallback() {
+                    public void onSuccess(final Object result) {
+                        refreshing = false;
+                        final MessageListService.MessageListUpdate update = (MessageListService.MessageListUpdate)result;
+                        assert update.getRequestedStartUID() == startUID;
+                        assert update.getRequestedEndUID() == endUID;
 
-                    if (update.getValidUIDs() != null) {
-                        final long[] uids = update.getValidUIDs();
+                        if (update.getValidUIDs() != null) {
+                            final long[] uids = update.getValidUIDs();
 
-                        final Iterator iter = messages.iterator();
-                        while (iter.hasNext()) {
-                            final GMMessage message = (GMMessage)iter.next();
-                            if (binarySearch(uids, message.getUid()) < 0) {
-                                iter.remove();
+                            final Iterator iter = messages.iterator();
+                            while (iter.hasNext()) {
+                                final GMMessage message = (GMMessage)iter.next();
+                                if (binarySearch(uids, message.getUid()) < 0) {
+                                    iter.remove();
+                                }
                             }
                         }
-                    }
-                    if (update.getBeforeStart() != null && !update.getBeforeStart().isEmpty()) {
-                        messages.addAll(0, update.getBeforeStart());
-                    }
-                    if (update.getAfterEnd() != null && !update.getAfterEnd().isEmpty()) {
-                        messages.addAll(update.getAfterEnd());
-                    }
+                        if (update.getBeforeStart() != null && !update.getBeforeStart().isEmpty()) {
+                            messages.addAll(0, update.getBeforeStart());
+                        }
+                        if (update.getAfterEnd() != null && !update.getAfterEnd().isEmpty()) {
+                            messages.addAll(update.getAfterEnd());
+                        }
 
 
-                }
-                public void onFailure(final Throwable caught) {
-                    refreshing = false;
-                    GWT.log("MessageList.refresh) failed!", caught);
-                }
-            });
+                    }
+                    public void onFailure(final Throwable caught) {
+                        refreshing = false;
+                        GWT.log("MessageList.refresh) failed!", caught);
+                    }
+                });
+            } else {
+                service.fetchMessageUids(client.getAccount(), folder, MessageListService.MessageOrder.RECEIVED, new AsyncCallback() {
+                    public void onSuccess(final Object result) {
+                        final long[] uids = (long[])result;
+                        messages.setUids(uids);
+                    }
+
+                    public void onFailure(final Throwable caught) {
+                        GWT.log("refresh() for UIDs", caught);
+                    }
+                });
+
+            }
             // update the folder info
             client.requestUpdate(folder);
         }
@@ -548,24 +571,84 @@ public final class MessageList extends Composite {
     private class FetchMessageListCommand implements Command {
         public void execute() {
             final MessageListServiceAsync service = MessageListService.App.getInstance();
+            if (false) {
+                service.fetchMessages(client.getAccount(), folder, new AsyncCallback() {
+                    public void onSuccess(final Object result) {
+                        final List allMessages = (List)result;
+                        // RPC deserialization takes time too, finish processing
+                        // this on the next browser event tick to help avoid SSW.
+                        DeferredCommand.add(new AddAllMessagesCommand(allMessages));
+                        //DeferredCommand.add(new BatchAddMessagesCommand(allMessages, 100));
+                    }
 
-            service.fetchMessages(client.getAccount(), folder, new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    final List allMessages = (List)result;
-                    // RPC deserialization takes time too, finish processing
-                    // this on the next browser event tick to help avoid SSW.
+                    public void onFailure(final Throwable caught) {
+                        GWT.log("FetchMessageListCommand", caught);
+                    }
+                });
+            } else {
+                service.fetchMessageUids(client.getAccount(), folder, MessageListService.MessageOrder.RECEIVED, new AsyncCallback() {
+                    public void onSuccess(final Object result) {
+                        final long[] uids = (long[])result;
+                        messages.setUids(uids);
+                    }
+
+                    public void onFailure(final Throwable caught) {
+                        GWT.log("FetchMessageListCommand for UIDs", caught);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Adds all the messages in one step.
+         */
+        private class AddAllMessagesCommand implements Command {
+            private final List allMessages;
+
+            public AddAllMessagesCommand(final List messages) {
+                this.allMessages = messages;
+            }
+
+            public void execute() {
+                // XXX? consider splitting this into a few commands, last elements first
+                messages.addAll(allMessages);
+            }
+        }
+        private class BatchAddMessagesCommand implements Command {
+            private final List remainingMessages;
+            private final int batchSize;
+
+            public BatchAddMessagesCommand(final List messages, final int batchSize) {
+                this.remainingMessages = messages;
+                this.batchSize = batchSize;
+            }
+
+            public void execute() {
+                // XXX? consider splitting this into a few commands, last elements first
+                final Iterator iter = remainingMessages.iterator();
+                final List stackOfBatches = new ArrayList();
+                List currentBatch = new ArrayList();
+                while (iter.hasNext()) {
+                    if (currentBatch.size() < batchSize) {
+                        currentBatch.add(iter.next());
+                    } else {
+                        stackOfBatches.add(0, currentBatch);
+                        currentBatch = new ArrayList();
+                    }
+                }
+                stackOfBatches.add(0, currentBatch);
+
+                final Iterator batchIter = stackOfBatches.iterator();
+                while (batchIter.hasNext()) {
+                    final List batch = (List)batchIter.next();
                     DeferredCommand.add(new Command() {
                         public void execute() {
-                            // XXX? consider splitting this into a few commands, last elements first
-                            messages.addAll(allMessages);
+                            messages.addAll(0, batch);
                         }
                     });
+                    DeferredCommand.add(null);
                 }
-
-                public void onFailure(final Throwable caught) {
-                    GWT.log("FetchMessageListCommand", caught);
-                }
-            });
+            }
         }
     }
 

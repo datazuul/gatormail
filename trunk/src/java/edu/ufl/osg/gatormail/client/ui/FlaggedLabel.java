@@ -80,6 +80,8 @@ public class FlaggedLabel extends Composite {
             } else {
                 image.setUrl("clear.gif");
             }
+        } else {
+            image.setUrl("clear.gif");            
         }
     }
 

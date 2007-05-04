@@ -21,8 +21,8 @@
 package edu.ufl.osg.gatormail.client.services;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
 
 /**
  * Async RPC interface for {@link edu.ufl.osg.gatormail.client.services.MessageListService}.
@@ -32,6 +32,8 @@ import edu.ufl.osg.gatormail.client.model.Account;
 public interface MessageListServiceAsync {
 
     void/*<GMMessage>*/ fetchMessages(Account account, GMFolder GMFolder, AsyncCallback async);
+
+    void fetchMessageUids(Account account, GMFolder GMFolder, MessageListService.MessageOrder order, AsyncCallback async);
 
     void fetchMessageListChanges(Account account, GMFolder gmFolder, long startUID, long endUID, int messageCount, AsyncCallback async);
 }

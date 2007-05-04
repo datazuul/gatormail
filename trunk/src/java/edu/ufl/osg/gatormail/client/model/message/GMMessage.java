@@ -36,7 +36,7 @@ import java.beans.PropertyChangeSupport;
  */
 public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
 
-    private final transient PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private transient PropertyChangeSupport pcs;
 
     private GMFolder folder;
     private GMMessageHeaders headers;
@@ -53,6 +53,9 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
      */
     private /*long*/ String uid /* = -1*/;
 
+    public GMMessage() {
+    }
+
     public GMFolder getFolder() {
         return folder;
     }
@@ -60,7 +63,7 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
     public void setFolder(final GMFolder gmFolder) {
         final Object old = this.folder;
         this.folder = gmFolder;
-        pcs.firePropertyChange("folder", old, gmFolder);
+        firePropertyChange("folder", old, gmFolder);
     }
 
 
@@ -74,9 +77,10 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
     }
 
     public void setUid(final long uid) {
+        assert this.uid == null : "UID cannot be changed old: " + getUid() + ", new: " + uid;
         final Object old = new Long(getUid());
         this.uid = Long.toString(uid);
-        pcs.firePropertyChange("uid", old, new Long(uid));
+        firePropertyChange("uid", old, new Long(uid));
     }
 
     public String getUidAsString() {
@@ -92,7 +96,7 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
         this.flags = flags;
         // if we ever allow headers to be reset, then we need to remove the listener.
         //headers.addPropertyChangeListener(new HeadersPropertyChangeListener());
-        pcs.firePropertyChange("flags", old, flags);
+        firePropertyChange("flags", old, flags);
     }
 
     public GMMessageHeaders getHeaders() {
@@ -107,7 +111,7 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
         this.headers = headers;
         // if we ever allow headers to be reset, then we need to remove the listener.
         headers.addPropertyChangeListener(new HeadersPropertyChangeListener());
-        pcs.firePropertyChange("headers", old, headers);
+        firePropertyChange("headers", old, headers);
     }
 
 
@@ -123,7 +127,7 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
         this.summary = summary;
         // if we ever allow summary to be reset, then we need to remove the listener.
         summary.addPropertyChangeListener(new HeadersPropertyChangeListener());
-        pcs.firePropertyChange("summary", old, summary);
+        firePropertyChange("summary", old, summary);
     }
 
 
@@ -139,23 +143,33 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
         this.part = part;
         // if we ever allow summary to be reset, then we need to remove the listener.
         part.addPropertyChangeListener(new HeadersPropertyChangeListener());
-        pcs.firePropertyChange("body", old, part);
+        firePropertyChange("body", old, part);
     }
 
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
+        }
         pcs.addPropertyChangeListener(listener);
     }
     
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
+        if (pcs != null) {
+            pcs.removePropertyChangeListener(listener);
+        }
     }
 
     public void addPropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
+        }
         pcs.addPropertyChangeListener(propertyName, listener);
     }
 
     public void removePropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(propertyName, listener);
+        if (pcs != null) {
+            pcs.removePropertyChangeListener(propertyName, listener);
+        }
     }
 
     /**
@@ -164,12 +178,18 @@ public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
      * @return <code>true</code> if there are any PropertyChangeListeners attached to this message.
      */
     public boolean hasPropertyChangeListeners() {
-        return pcs.getPropertyChangeListeners().length > 0;
+        return pcs != null && pcs.getPropertyChangeListeners().length > 0;
+    }
+
+    private void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
+        if (pcs != null) {
+            pcs.firePropertyChange(propertyName, oldValue, newValue);
+        }
     }
 
     private class HeadersPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(final PropertyChangeEvent event) {
-            pcs.firePropertyChange("headers", null, headers);
+            firePropertyChange("headers", null, headers);
         }
     }
 }

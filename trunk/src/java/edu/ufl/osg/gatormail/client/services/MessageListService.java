@@ -20,17 +20,16 @@
 
 package edu.ufl.osg.gatormail.client.services;
 
-import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializableException;
-import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.core.client.GWT;
-
-import java.util.List;
-import java.util.ArrayList;
-
-import edu.ufl.osg.gatormail.client.model.GMFolder;
+import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import edu.ufl.osg.gatormail.client.model.Account;
+import edu.ufl.osg.gatormail.client.model.GMFolder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * RPC service methods to fetch information about the list of messages in a folder.
@@ -44,8 +43,37 @@ public interface MessageListService extends RemoteService {
      */
     public List/*<GMMessage>*/ fetchMessages(Account account, GMFolder GMFolder) throws SerializableException;
 
+    public long[] fetchMessageUids(Account account, GMFolder GMFolder, MessageOrder order) throws SerializableException;
+
     public MessageListUpdate fetchMessageListChanges(Account account, GMFolder gmFolder, long startUID, long endUID, int messageCount) throws SerializableException;
 
+    public static class MessageOrder implements IsSerializable {
+        public static final MessageOrder RECEIVED = new MessageOrder("RECEIVED");
+        public static final MessageOrder SENT = new MessageOrder("SENT");
+
+        private final String name;
+
+        public MessageOrder() {
+            name = null;
+        }
+
+        public MessageOrder(final String name) {
+            this.name = name.toUpperCase();
+        }
+
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof MessageOrder)) return false;
+
+            final MessageOrder that = (MessageOrder)o;
+
+            return !(name != null ? !name.equals(that.name) : that.name != null);
+        }
+
+        public int hashCode() {
+            return (name != null ? name.hashCode() : 0);
+        }
+    }
 
     public static class MessageListUpdate implements IsSerializable {
         private long requestedStartUID = -1;

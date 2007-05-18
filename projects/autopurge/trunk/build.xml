@@ -1,0 +1,51 @@
+<project name="AutoPurge" basedir="." default="all">
+
+    <target name="init">
+        <tstamp/>
+    </target>
+
+    <target name="build-classes" depends="init">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src/java" destdir="build/classes" debug="true" optimize="false" source="1.4" target="1.4">
+            <classpath path="lib/jaf/activation.jar"/>
+            <classpath path="lib/javamail/mail.jar"/>
+        </javac>
+    </target>
+
+    <target name="build-jar" depends="init,build-classes">
+        <mkdir dir="build/one-jar/main"/>
+        <jar destfile="build/one-jar/main/main.jar" compress="true">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Built-On" value="${TODAY}"/>
+                <attribute name="Main-Class" value="edu.ufl.osg.autopurge.Main"/>
+                <attribute name="Class-Path" value="main/Main.jar lib/activation.jar lib/mail.jar"/>
+            </manifest>
+            <fileset dir="build/classes"/>
+        </jar>
+
+        <mkdir dir="build/one-jar/lib"/>
+        <copy file="lib/jaf/activation.jar" todir="build/one-jar/lib"/>
+        <copy file="lib/javamail/mail.jar" todir="build/one-jar/lib"/>
+
+        <jar destfile="${ant.project.name}.jar" compress="true">
+            <manifest>
+                <attribute name="Main-Class" value="com.simontuffs.onejar.Boot"/>
+                <attribute name="One-Jar-Main-Class" value="edu.ufl.osg.autopurge.Main"/>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Built-On" value="${TODAY}"/>
+            </manifest>
+            <fileset  dir="build/one-jar/" includes="main/**"/>
+            <fileset dir="build/one-jar/" includes="lib/**"/>
+            <zipfileset src="lib/one-jar/one-jar-boot-0.96.jar"/>
+            <fileset dir="src" includes="config/**"/>
+        </jar>
+
+    </target>
+
+    <target name="clean" depends="init">
+        <delete dir="build"/>
+    </target>
+
+    <target name="all" depends="build-jar"/>
+</project>

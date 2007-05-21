@@ -119,6 +119,7 @@ public class Main {
             return; // just to make the compiler happy.
         }
 
+        LOGGER.info("AutoPurge " + autoPurge.currentStats.get().toString());
         LOGGER.info("GatorMail AutoPurge completed normally.");
     }
 

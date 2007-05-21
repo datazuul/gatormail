@@ -73,6 +73,10 @@ public class AutoPurge {
     private final String userMailboxNamespace;
     private final String mailStoreProtocol;
 
+    private final ThreadLocal currentUser = new ThreadLocal();
+
+    final StatsThreadLocal currentStats = new StatsThreadLocal();
+
     public AutoPurge(final Properties props) {
         this.props = (Properties)props.clone();
 
@@ -189,8 +193,6 @@ public class AutoPurge {
         }
     }
 
-    private final ThreadLocal currentUser = new ThreadLocal();
-
     public void purgeMailboxes(final List usernames) throws NoSuchProviderException {
         final Logger logger = Logger.getLogger(AutoPurge.class.getName() + ".purgeMailbox");
 
@@ -199,6 +201,7 @@ public class AutoPurge {
         while (iter.hasNext()) {
             final String username = (String)iter.next();
             currentUser.set(username);
+            currentStats.getStats().processedUsers++;
             logger.fine("Processing username: " + username);
 
             final Properties props = getProperties(username);
@@ -227,6 +230,7 @@ public class AutoPurge {
                         purgeRoot = store.getFolder(purgeRootName);
                     } catch (MessagingException e) {
                         logger.log(Level.FINE, "Exception opening " + purgeRootName + " for " + username, e);
+                        currentStats.getStats().problemFolders++;
                         continue;
                     }
                     purge(purgeRoot);
@@ -234,10 +238,12 @@ public class AutoPurge {
 
             } catch (MessagingException e) {
                 logger.log(Level.WARNING, "Unexpected error for mailbox: " + username, e);
+                currentStats.getStats().problemMailboxes++;
 
             } finally {
                 try {
                     store.close();
+                    currentStats.getStats().processedMailboxes++;
                 } catch (MessagingException e) {
                     logger.log(Level.FINER, "Exception closing mail store. Exception swallowed.", e);
                 }
@@ -286,6 +292,7 @@ public class AutoPurge {
                     folder.fetch(messages, FLAGS_FETCH_PROFILE);
                 } catch (MessagingException e) {
                     logger.log(Level.FINE, currentUser.get() + ": exception fetching messages in folder " + folder, e);
+                    currentStats.getStats().problemFolders++;
                     return;
                 }
 
@@ -296,6 +303,7 @@ public class AutoPurge {
             } finally {
                 try {
                     folder.close(true);
+                    currentStats.getStats().processedFolders++;
                 } catch (MessagingException me) {
                     logger.log(Level.FINE, currentUser.get() + ": unable to close and expunge " + folder, me);
                 }
@@ -334,6 +342,7 @@ public class AutoPurge {
 
                 final Flags flag = new Flags(tag);
                 message.setFlags(flag, true);
+                currentStats.getStats().flaggedMessages++;
 
             } else if (expireAfterDays != 0) {
                 // check if expired
@@ -350,6 +359,7 @@ public class AutoPurge {
                             logger.finest(currentUser.get() + ": purging message " + message.getMessageNumber() + " in folder " + message.getFolder());
                         }
                         message.setFlag(Flags.Flag.DELETED, true);
+
                     } else if (expireAfterDays < 0) {
                         if (message.getFolder() instanceof UIDFolder) {
                             final UIDFolder uidFolder = (UIDFolder)message.getFolder();
@@ -358,6 +368,8 @@ public class AutoPurge {
                             logger.finest(currentUser.get() + ": would have purged message " + message.getMessageNumber() + " in folder " + message.getFolder());
                         }
                     }
+                    currentStats.getStats().deletedMessages++;
+
                 } else {
                     if (message.getFolder() instanceof UIDFolder) {
                         final UIDFolder uidFolder = (UIDFolder)message.getFolder();
@@ -365,6 +377,7 @@ public class AutoPurge {
                     } else {
                         logger.finest(currentUser.get() + ": " + ElapsedTime.getDays(Calendar.getInstance(), taggedCal) + " days old, keeping message " + message.getMessageNumber() + " in folder " + message.getFolder());
                     }
+                    currentStats.getStats().keptMessages++;
                 }
             }
         } catch (MessagingException e) {
@@ -382,6 +395,39 @@ public class AutoPurge {
     private class CustomAuthenticator extends Authenticator {
         protected PasswordAuthentication getPasswordAuthentication() {
             return new PasswordAuthentication(authenticationName, authenticationPassword);
+        }
+    }
+
+    private static class Stats {
+        public int processedUsers;
+        public int processedMailboxes;
+        public int processedFolders;
+
+        public int problemMailboxes;
+        public int problemFolders;
+        public int flaggedMessages;
+        public int deletedMessages;
+        public int keptMessages;
+
+        public String toString() {
+            return "Stats {" +
+                    "users=" + processedUsers +
+                    ", mailboxes=" + processedMailboxes + "/" + problemMailboxes +
+                    ", folders=" + processedFolders + "/" + problemFolders +
+                    ", flaggedMessages=" + flaggedMessages +
+                    ", keptMessages=" + keptMessages +
+                    ", deletedMessages=" + deletedMessages +
+                    '}';
+        }
+    }
+
+    class StatsThreadLocal extends ThreadLocal {
+        protected Object initialValue() {
+            return new Stats();
+        }
+
+        public Stats getStats() {
+            return (Stats)get();
         }
     }
 }

@@ -183,7 +183,7 @@ public class Main {
         System.err.println("\tautopurge.authentication.pass: Privilaged user's password");
         System.err.println("\tautopurge.namespace.user: prefix of user folders namespace [user]");
         System.err.println("\tautopurge.usernames.shuffle: false to process the discovered usernames in the order discovered [true]");
-        System.err.println("\tautopurge.purge.roots: Command seperated list of folders in each user's mailbox to auto purge. eg: INBOX/Trash,INBOX/Junk");
+        System.err.println("\tautopurge.purge.roots: Comma seperated list of folders in each user's mailbox to auto purge. eg: INBOX/Trash,INBOX/Junk");
         System.err.println("\tautopurge.purge.pattern: If set, only purges mailboxes that match the regex pattern. (see java.util.regex.Pattern)");
         System.err.println("\tautopurge.purge.flag.prefix: Prefix of the auto purge flag [Discarded-]");
         System.err.println("\tautopurge.purge.flag.format: Format of date in auto purge flag [yyyy-MM-dd] (see java.text.SimpleDateFormat)");

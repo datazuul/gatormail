@@ -30,6 +30,7 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.UIDFolder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,7 +47,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * TODO: Write class JavaDoc.
+ * Purges messages based on the number of days they have been in a folder.
  *
  * @author Sandy McArthur
  */
@@ -96,6 +97,7 @@ public class AutoPurge {
         purgeRoots = Collections.unmodifiableList(
                 Arrays.asList(props.getProperty("autopurge.purge.roots").split(",")));
         initLogger.config("autopurge.purge.roots=" + purgeRoots);
+        LOGGER.info("Mailbox purge roots are: " + purgeRoots);
 
         if (props.getProperty("autopurge.purge.pattern") != null) {
             purgePattern = Pattern.compile(props.getProperty("autopurge.purge.pattern"));
@@ -323,7 +325,13 @@ public class AutoPurge {
             if (taggedDate == null) {
                 // add tag
                 final String tag = purgeFlagPrefix + dateFormat.format(new Date());
-                logger.finest(currentUser.get() + ": adding flag " + tag + " to message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                if (message.getFolder() instanceof UIDFolder) {
+                    final UIDFolder uidFolder = (UIDFolder)message.getFolder();
+                    logger.finest(currentUser.get() + ": adding flag " + tag + " to message uid: " + uidFolder.getUID(message) + " in folder " + uidFolder);
+                } else {
+                    logger.finest(currentUser.get() + ": adding flag " + tag + " to message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                }
+
                 final Flags flag = new Flags(tag);
                 message.setFlags(flag, true);
 
@@ -335,13 +343,28 @@ public class AutoPurge {
                 expireCal.add(Calendar.DATE, -1 * Math.abs(expireAfterDays));
                 if (taggedCal.before(expireCal)) {
                     if (expireAfterDays > 0) {
-                        logger.finest(currentUser.get() + ": purging message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                        if (message.getFolder() instanceof UIDFolder) {
+                            final UIDFolder uidFolder = (UIDFolder)message.getFolder();
+                            logger.finest(currentUser.get() + ": purging message uid: " + uidFolder.getUID(message) + " in folder " + uidFolder);
+                        } else {
+                            logger.finest(currentUser.get() + ": purging message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                        }
                         message.setFlag(Flags.Flag.DELETED, true);
                     } else if (expireAfterDays < 0) {
-                        logger.finest(currentUser.get() + ": would have purged message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                        if (message.getFolder() instanceof UIDFolder) {
+                            final UIDFolder uidFolder = (UIDFolder)message.getFolder();
+                            logger.finest(currentUser.get() + ": would have purged message uid: " + uidFolder.getUID(message) + " in folder " + uidFolder);
+                        } else {
+                            logger.finest(currentUser.get() + ": would have purged message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                        }
                     }
                 } else {
-                    logger.finest(currentUser.get() + ": " + ElapsedTime.getDays(Calendar.getInstance(), taggedCal) + " days old, keeping message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                    if (message.getFolder() instanceof UIDFolder) {
+                        final UIDFolder uidFolder = (UIDFolder)message.getFolder();
+                        logger.finest(currentUser.get() + ": " + ElapsedTime.getDays(Calendar.getInstance(), taggedCal) + " days old, keeping message uid: " + uidFolder.getUID(message) + " in folder " + uidFolder);
+                    } else {
+                        logger.finest(currentUser.get() + ": " + ElapsedTime.getDays(Calendar.getInstance(), taggedCal) + " days old, keeping message " + message.getMessageNumber() + " in folder " + message.getFolder());
+                    }
                 }
             }
         } catch (MessagingException e) {

@@ -252,6 +252,17 @@ public class AutoPurge {
     }
 
     private void purge(final Folder folder)  {
+        try {
+            if (!folder.exists()) {
+                final Logger logger = Logger.getLogger(AutoPurge.class.getName() + ".purgeMailbox");
+                logger.fine(currentUser.get() + ": folder " + folder + " does not exists.");
+                return; // next folder, this one doesn't exist.
+            }
+        } catch (MessagingException e) {
+            final Logger logger = Logger.getLogger(AutoPurge.class.getName() + ".purgeMailbox");
+            logger.log(Level.FINER, currentUser.get() + ": unexpected error checking if " + folder + " exists.", e);
+            return; // skip this folder
+        }
 
         // Auto Purge current folder
         try {

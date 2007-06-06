@@ -22,8 +22,8 @@ package edu.ufl.osg.gatormail.client.model;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Bean for a message's Flags.
@@ -32,7 +32,14 @@ import java.util.ArrayList;
  */
 public class GMFlags implements IsSerializable {
 
+    /**
+     * @gwt.typeArgs <edu.ufl.osg.gatormail.client.model.GMFlags.GMFlag>
+     */
     private List/*<GMFlag>*/ systemFlags;
+
+    /**
+     * @gwt.typeArgs <java.lang.String>
+     */
     private List/*<String>*/ userFlags;
 
 

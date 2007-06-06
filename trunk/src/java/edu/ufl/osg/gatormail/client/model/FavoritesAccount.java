@@ -25,7 +25,8 @@ import java.util.List;
 /**
  * An Account that has favorite folders
  */
-public interface FavoritesAccount extends Account {
+public interface FavoritesAccount /*extends Account*/ {
+//public interface FavoritesAccount extends Account { // GWT 1.4.10RC RCP has problems with this, issue 1163
 
     /**
      * Get the user's favorite folders.

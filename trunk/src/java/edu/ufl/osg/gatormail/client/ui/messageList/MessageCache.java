@@ -20,13 +20,10 @@
 
 package edu.ufl.osg.gatormail.client.ui.messageList;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Cache of {@link edu.ufl.osg.gatormail.client.model.message.GMMessage}s keyed by uid.
@@ -34,42 +31,58 @@ import java.util.Map;
  * @author Sandy McArthur
  */
 final class MessageCache {
-    private final Map cache = new HashMap();
+
+   private final JavaScriptObject cacheJSO;
 
     private final GatorMailWidget client;
 
     /**
-     * All messages in this cache must belong to this folder.
+     * All messages in this cacheMap must belong to this folder.
      */
     private final GMFolder folder;
 
     public MessageCache(final GatorMailWidget client, final GMFolder folder) {
         this.client = client;
         this.folder = folder;
+
+        cacheJSO = createJSOArray();
     }
 
     public GMMessage getMessage(final long uid) {
-        return getMessage(new Long(uid));
-    }
-
-    public GMMessage getMessage(final Long uid) {
-        GMMessage message = (GMMessage)cache.get(uid);
+        GMMessage message = get(uid);
         if (message == null) {
             message = new GMMessage();
             message.setFolder(folder);
-            message.setUid(uid.longValue());
-            cache.put(uid, message);
+            message.setUid(uid);
+            put(uid, message);
         }
         return message;
     }
 
-    public void prune() {
-        final Iterator iter = cache.values().iterator();
-        while (iter.hasNext()) {
-            final GMMessage message = (GMMessage)iter.next();
-            if (!message.hasPropertyChangeListeners()) {
-                iter.remove();
-            }
-        }
+    public void removeMessage(final GMMessage message) {
+        remove(message.getUid());
     }
+
+    public void prune() {
+
+    }
+
+    private static native JavaScriptObject createJSOArray() /*-{
+        return [];
+    }-*/;
+
+    private native GMMessage get(final long uid) /*-{
+        var cache = this.@edu.ufl.osg.gatormail.client.ui.messageList.MessageCache::cacheJSO;
+        return cache[uid] || null;
+    }-*/;
+
+    private native void put(final long uid, final GMMessage message) /*-{
+        var cache = this.@edu.ufl.osg.gatormail.client.ui.messageList.MessageCache::cacheJSO;
+        cache[uid] = message;
+    }-*/;
+
+    private native void remove(final long uid) /*-{
+        var cache = this.@edu.ufl.osg.gatormail.client.ui.messageList.MessageCache::cacheJSO;
+        cache[uid] = null;
+    }-*/;
 }

@@ -20,35 +20,34 @@
 
 package edu.ufl.osg.gatormail.client.model;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
 import java.io.Serializable;
 
 /**
  * An account for a mail box.
  */
-public interface Account extends IsSerializable, Serializable {
+//public abstract class Account implements Serializable {
+public interface Account extends Serializable {
 
     /**
      * Account Name.
      *
      * @return the name of the account.
      */
-    public String getAccountName();
+    public abstract String getAccountName();
 
     /**
      * The username for this account.
      *
      * @return The username for this account.
      */
-    public String getUsername();
+    public abstract String getUsername();
 
     /**
      * The password for this account.
      *
      * @return the password for this account.
      */
-    public String getPassword();
+    public abstract String getPassword();
 
     /**
      * The domain part of an email address.
@@ -56,7 +55,7 @@ public interface Account extends IsSerializable, Serializable {
      *
      * @return The domain part of an email address.
      */
-    public String getAccountDomain();
+    public abstract String getAccountDomain();
 
     /**
      * The users email address for this account.
@@ -65,40 +64,40 @@ public interface Account extends IsSerializable, Serializable {
      *
      * @return the users email address for this account.
      */
-    public String getEmailAddress();
+    public abstract String getEmailAddress();
 
     /**
      * The user's INBOX folder full name.
      *
      * @return The user's INBOX folder full name.
      */
-    public String getInboxFolderName();
+    public abstract String getInboxFolderName();
 
     /**
      * The user's Drafts folder full name.
      *
      * @return the user's Drafts folder full name.
      */
-    public String getDraftsFolderName();
+    public abstract String getDraftsFolderName();
 
     /**
      * This accounts Junk folder full name.
      *
      * @return This accounts Junk folder full name.
      */
-    public String getJunkFolderName();
+    public abstract String getJunkFolderName();
 
     /**
      * This accounts Sent folder full name.
      *
      * @return This accounts Sent folder full name.
      */
-    public String getSentFolderName();
+    public abstract String getSentFolderName();
 
     /**
      * This accounts Trash folder full name.
-     * 
+     *
      * @return This accounts Trash folder full name.
      */
-    public String getTrashFolderName();
+    public abstract String getTrashFolderName();
 }

@@ -20,25 +20,49 @@
 
 package edu.ufl.osg.gatormail.client.ui.messageList;
 
+import edu.ufl.osg.gatormail.client.model.messageList.Filter;
+import edu.ufl.osg.gatormail.client.model.messageList.Order;
+import edu.ufl.osg.gatormail.client.model.messageList.Prescript;
 import org.mcarthur.sandy.gwt.event.list.client.AbstractEventList;
 import org.mcarthur.sandy.gwt.event.list.client.EventList;
 import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * Presents an ondered {@link EventList} of {@link edu.ufl.osg.gatormail.client.model.message.GMMessage}
  *
  * @author Sandy McArthur
  */
-final class OrderedMessageList extends AbstractEventList implements EventList {
+final class PrescriptedMessageList extends AbstractEventList implements EventList {
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
     private final MessageCache cache;
 
+    private Prescript prescript = new Prescript(Order.RECEIVED, Filter.ALL);
     private long[] uids = new long[0];
 
-    public OrderedMessageList(final MessageCache cache) {
+    public PrescriptedMessageList(final MessageCache cache) {
         this.cache = cache;
     }
 
-    public void setUids(final long[] uids) {
+    public Prescript getPrescript() {
+        return prescript;
+    }
+
+    public void setUids(final Prescript prescript,final long[] uids) {
+        final Object old = getPrescript();
+        this.prescript = prescript;
+        pcs.firePropertyChange("prescript", old, prescript);
+
+        setUids(uids);
+    }
+
+    /**
+     * @deprecated {@link #setUids(edu.ufl.osg.gatormail.client.model.messageList.Prescript, long[])}
+     */
+    void setUids(final long[] uids) {
         // TODO: optimize this sommehow
         if (size() > 0) {
             fireListEvent(ListEvent.createRemoved(this, 0, size()));
@@ -55,5 +79,13 @@ final class OrderedMessageList extends AbstractEventList implements EventList {
 
     public int size() {
         return uids.length;
+    }
+
+    public void addPropertyChangeListener(final PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(final PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 }

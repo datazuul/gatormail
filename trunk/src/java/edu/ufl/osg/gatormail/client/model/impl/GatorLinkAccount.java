@@ -22,7 +22,10 @@ package edu.ufl.osg.gatormail.client.model.impl;
 
 import edu.ufl.osg.gatormail.client.model.Account;
 
-public class GatorLinkAccount implements Account {
+import java.io.Serializable;
+
+//public class GatorLinkAccount extends Account implements Serializable {
+public class GatorLinkAccount implements Account, Serializable {
 
     private String username;
     private String password;

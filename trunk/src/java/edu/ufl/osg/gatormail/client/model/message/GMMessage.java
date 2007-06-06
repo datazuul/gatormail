@@ -20,7 +20,6 @@
 
 package edu.ufl.osg.gatormail.client.model.message;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import edu.ufl.osg.gatormail.client.model.GMFlags;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import org.mcarthur.sandy.gwt.event.property.client.NamedPropertyChangeSource;
@@ -28,13 +27,14 @@ import org.mcarthur.sandy.gwt.event.property.client.NamedPropertyChangeSource;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 
 /**
  * GatorMail Message bean.
  *
  * @author Sandy McArthur
  */
-public class GMMessage implements IsSerializable, NamedPropertyChangeSource {
+public class GMMessage implements Serializable, NamedPropertyChangeSource {
 
     private transient PropertyChangeSupport pcs;
 

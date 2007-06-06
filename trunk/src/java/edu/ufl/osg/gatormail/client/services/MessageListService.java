@@ -27,8 +27,9 @@ import com.google.gwt.user.client.rpc.SerializableException;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
+import edu.ufl.osg.gatormail.client.model.messageList.Prescript;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -41,24 +42,54 @@ public interface MessageListService extends RemoteService {
      * @return A {@link List} of {@link edu.ufl.osg.gatormail.client.model.message.GMMessage}.
      * @gwt.typeArgs <edu.ufl.osg.gatormail.client.model.message.GMMessage>
      */
-    public List/*<GMMessage>*/ fetchMessages(Account account, GMFolder GMFolder) throws SerializableException;
+    public MessageListUpdate fetchMessages(Account account, GMFolder gmFolder, Prescript prescript) throws SerializableException;
 
     public long[] fetchMessageUids(Account account, GMFolder GMFolder, MessageOrder order) throws SerializableException;
 
-    public MessageListUpdate fetchMessageListChanges(Account account, GMFolder gmFolder, long startUID, long endUID, int messageCount) throws SerializableException;
+    public static class MessageListUpdate implements Serializable {
+        private Prescript prescript;
+        private long[] uids;
+
+        public MessageListUpdate() {
+            prescript = null;
+            uids = new long[0];
+        }
+
+        public MessageListUpdate(final Prescript prescript, final long[] uids) {
+            this.prescript = prescript;
+            this.uids = uids;
+        }
+
+        public Prescript getPrescript() {
+            return prescript;
+        }
+
+        public long[] getUids() {
+            return uids;
+        }
+    }
 
     public static class MessageOrder implements IsSerializable {
         public static final MessageOrder RECEIVED = new MessageOrder("RECEIVED");
         public static final MessageOrder SENT = new MessageOrder("SENT");
 
-        private final String name;
+        private String name;
 
         public MessageOrder() {
-            name = null;
+            setName(null);
         }
 
         public MessageOrder(final String name) {
-            this.name = name.toUpperCase();
+            setName(name);
+        }
+
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name != null ? name.toUpperCase() : null;
         }
 
         public boolean equals(final Object o) {
@@ -67,75 +98,15 @@ public interface MessageListService extends RemoteService {
 
             final MessageOrder that = (MessageOrder)o;
 
-            return !(name != null ? !name.equals(that.name) : that.name != null);
+            return !(getName() != null ? !getName().equals(that.getName()) : that.getName() != null);
         }
 
         public int hashCode() {
-            return (name != null ? name.hashCode() : 0);
-        }
-    }
-
-    public static class MessageListUpdate implements IsSerializable {
-        private long requestedStartUID = -1;
-        private long requestedEndUID = -1;
-        private List/*<GMMessage>*/ beforeStart;
-        private long[] validUIDs;
-        private List/*<GMMessage>*/ afterEnd;
-
-        public MessageListUpdate() {
+            return (getName() != null ? getName().hashCode() : 0);
         }
 
-        public MessageListUpdate(final long requestedStartUID, final long requestedEndUID) {
-            this.requestedStartUID = requestedStartUID;
-            this.requestedEndUID = requestedEndUID;
-        }
-
-        public long getRequestedEndUID() {
-            return requestedEndUID;
-        }
-
-        public void setRequestedEndUID(final long requestedEndUID) {
-            this.requestedEndUID = requestedEndUID;
-        }
-
-        public long getRequestedStartUID() {
-            return requestedStartUID;
-        }
-
-        public void setRequestedStartUID(final long requestedStartUID) {
-            this.requestedStartUID = requestedStartUID;
-        }
-
-        public List getBeforeStart() {
-            return beforeStart;
-        }
-
-        public void setBeforeStart(final List beforeStart) {
-            if (GWT.isScript()) {
-                this.beforeStart = beforeStart;
-            } else {
-                this.beforeStart = new ArrayList(beforeStart);
-            }
-        }
-
-        public long[] getValidUIDs() {
-            return validUIDs;
-        }
-
-        public void setValidUIDs(final long[] validUIDs) {
-            this.validUIDs = validUIDs;
-        }
-
-        public List getAfterEnd() {
-            return afterEnd;
-        }
-
-        public void setAfterEnd(final List afterEnd) {
-            if (GWT.isScript()) {
-                this.afterEnd = afterEnd;
-            } else {
-                this.afterEnd = new ArrayList(afterEnd);
-            }
+        public String toString() {
+            return getName();
         }
     }
 

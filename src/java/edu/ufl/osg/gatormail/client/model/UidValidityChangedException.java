@@ -29,9 +29,9 @@ import com.google.gwt.user.client.rpc.SerializableException;
  */
 public class UidValidityChangedException extends SerializableException {
 
-    private final String folderFullName;
-    private final String expectedUidValidity;
-    private final String currentUidValidity;
+    private String folderFullName;
+    private String expectedUidValidity;
+    private String currentUidValidity;
 
     public UidValidityChangedException() {
         folderFullName = expectedUidValidity = currentUidValidity = null;
@@ -43,11 +43,9 @@ public class UidValidityChangedException extends SerializableException {
         this.currentUidValidity = Long.toString(current);
     }
 
-
     public String getMessage() {
         return "UIDValidity mismatch. Expected " + expectedUidValidity + " Found: " + currentUidValidity + " for " + folderFullName;
     }
-
 
     public long getCurrentUidValidity() {
         return Long.parseLong(currentUidValidity);

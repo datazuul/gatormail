@@ -18,21 +18,46 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package edu.ufl.osg.gatormail.client.services;
+package edu.ufl.osg.gatormail.client.model.messageList;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import edu.ufl.osg.gatormail.client.model.Account;
-import edu.ufl.osg.gatormail.client.model.GMFolder;
-import edu.ufl.osg.gatormail.client.model.messageList.Prescript;
+import java.io.Serializable;
 
 /**
- * Async RPC interface for {@link edu.ufl.osg.gatormail.client.services.MessageListService}.
+ * A container object for the order and filter associated with a list of messages.
  *
  * @author Sandy McArthur
  */
-public interface MessageListServiceAsync {
+public class Prescript implements Serializable {
+    private Order order;
+    private Filter filter;
 
-    void fetchMessages(Account account, GMFolder GMFolder, Prescript prescript, AsyncCallback async);
+    public Prescript() {
+        this(Order.NATURAL, Filter.ALL);
+    }
 
-    void fetchMessageUids(Account account, GMFolder GMFolder, MessageListService.MessageOrder order, AsyncCallback async);
+    public Prescript(final Order order, final Filter filter) {
+        this.filter = filter;
+        this.order = order;
+    }
+
+    public Filter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(final Filter filter) {
+        this.filter = filter;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(final Order order) {
+        this.order = order;
+    }
+
+
+    public String toString() {
+        return "Prescript{" + "order=" + order + ", filter=" + filter + '}';
+    }
 }

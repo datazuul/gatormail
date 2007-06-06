@@ -24,7 +24,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.DeferredCommand;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -103,9 +102,8 @@ public final class MessageList extends Composite {
     private final ObjectListTable oltSummary;
     private final SummaryMessageRenderer oltSummaryRenderer;
 
-    //private final EventList/*<GMMessage>*/ messages = new ObservingEventList(); // TODO: switch this to a "PartialObservingEventList" that only observes the current view
     private final MessageCache messageCache;
-    private final OrderedMessageList/*<GMMessage>*/ messages;
+    private final PrescriptedMessageList/*<GMMessage>*/ messages;
     private final EventList/*<GMMessage>*/ messagesReversed;
     private final FilteredEventList/*<GMMessage>*/ messagesFiltered;
     private final RangedEventList/*<GMMessage>*/ messagesPaged;
@@ -114,14 +112,12 @@ public final class MessageList extends Composite {
     private final EventList/*<GMMessage>*/ selectedMessages = EventLists.eventList();
     private final ListEventListener selectedMessagesListener;
 
-    private boolean refreshing = false;
-
     public MessageList(final GatorMailWidget client, final GMFolder gmFolder) {
         this.client = client;
         this.folder = gmFolder;
 
         messageCache = new MessageCache(client, gmFolder);
-        messages = new OrderedMessageList(messageCache);
+        messages = new PrescriptedMessageList(messageCache);
         messagesReversed = EventLists.reverseEventList(messages);
         messagesFiltered = EventLists.filteredEventList(messagesReversed);
         messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);
@@ -341,7 +337,8 @@ public final class MessageList extends Composite {
 
         showMenuPopup.addItem("Deleted", new HasFlagFilterCommand(GMFlags.GMFlag.DELETED));
 
-        showMenu.addItem("[Pick one]", showMenuPopup);
+        //showMenu.addItem("[Pick one]", showMenuPopup);
+        showMenu.addItem(new CurrentFilterMenuItem(messages, showMenuPopup));
         buttons.add(showMenu);
 
         buttonsRow.setHorizontalAlignment(HasAlignment.ALIGN_LEFT);
@@ -454,10 +451,10 @@ public final class MessageList extends Composite {
         // Message List
         oltRenderer = new MessageRenderer();
         olt = new ObjectListTable(oltRenderer, messagesView);
-        setAttribute(olt.getElement(), "width", "100%");
-        setAttribute(olt.getElement(), "cellspacing", "0");
-        setAttribute(olt.getElement(), "cellpadding", "0");
-        //setAttribute(olt.getElement(), "border", "1");
+        DOM.setElementAttribute(olt.getElement(), "width", "100%");
+        DOM.setElementAttribute(olt.getElement(), "cellspacing", "0");
+        DOM.setElementAttribute(olt.getElement(), "cellpadding", "0");
+        //DOM.setElementAttribute(olt.getElement(), "border", "1");
 
         olt.addStyleName("gm-MessageList-Table");
         
@@ -466,79 +463,30 @@ public final class MessageList extends Composite {
         // TODO: do this better
         oltSummaryRenderer = new SummaryMessageRenderer();
         oltSummary = new ObjectListTable(oltSummaryRenderer, messagesView);
-        setAttribute(oltSummary.getElement(), "width", "100%");
-        setAttribute(oltSummary.getElement(), "cellspacing", "0");
-        setAttribute(oltSummary.getElement(), "cellpadding", "0");
-        //setAttribute(oltSummary.getElement(), "border", "1");
+        DOM.setElementAttribute(oltSummary.getElement(), "width", "100%");
+        DOM.setElementAttribute(oltSummary.getElement(), "cellspacing", "0");
+        DOM.setElementAttribute(oltSummary.getElement(), "cellpadding", "0");
+        //DOM.setElementAttribute(oltSummary.getElement(), "border", "1");
 
         oltSummary.addStyleName("gm-MessageList-Message-Summary");
 
-        DeferredCommand.add(new FetchMessageListCommand());
+        DeferredCommand.addCommand(new FetchMessageListCommand());
     }
 
     private void refresh() {
-        if (!refreshing) {
-            refreshing = true;
-            final MessageListServiceAsync service = MessageListService.App.getInstance();
-            if (false) {
-                final long startUID;
-                final long endUID;
-                if (messages.isEmpty()) {
-                    startUID = endUID = 0;
-                } else {
-                    final GMMessage first = (GMMessage)messages.get(0);
-                    final GMMessage last = (GMMessage)messages.get(messages.size()-1);
-                    startUID = first.getUid();
-                    endUID = last.getUid();
-                }
-                service.fetchMessageListChanges(client.getAccount(), folder, startUID, endUID, messages.size(), new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        refreshing = false;
-                        final MessageListService.MessageListUpdate update = (MessageListService.MessageListUpdate)result;
-                        assert update.getRequestedStartUID() == startUID;
-                        assert update.getRequestedEndUID() == endUID;
+        final MessageListServiceAsync service = MessageListService.App.getInstance();
 
-                        if (update.getValidUIDs() != null) {
-                            final long[] uids = update.getValidUIDs();
-
-                            final Iterator iter = messages.iterator();
-                            while (iter.hasNext()) {
-                                final GMMessage message = (GMMessage)iter.next();
-                                if (binarySearch(uids, message.getUid()) < 0) {
-                                    iter.remove();
-                                }
-                            }
-                        }
-                        if (update.getBeforeStart() != null && !update.getBeforeStart().isEmpty()) {
-                            messages.addAll(0, update.getBeforeStart());
-                        }
-                        if (update.getAfterEnd() != null && !update.getAfterEnd().isEmpty()) {
-                            messages.addAll(update.getAfterEnd());
-                        }
-
-
-                    }
-                    public void onFailure(final Throwable caught) {
-                        refreshing = false;
-                        GWT.log("MessageList.refresh) failed!", caught);
-                    }
-                });
-            } else {
-                service.fetchMessageUids(client.getAccount(), folder, MessageListService.MessageOrder.RECEIVED, new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        final long[] uids = (long[])result;
-                        messages.setUids(uids);
-                    }
-
-                    public void onFailure(final Throwable caught) {
-                        GWT.log("refresh() for UIDs", caught);
-                    }
-                });
-
+        service.fetchMessages(client.getAccount(), folder, messages.getPrescript(), new AsyncCallback() {
+            public void onSuccess(final Object result) {
+                final MessageListService.MessageListUpdate update = (MessageListService.MessageListUpdate)result;
+                messages.setUids(update.getPrescript(), update.getUids());
             }
-            // update the folder info
-            client.requestUpdate(folder);
-        }
+
+            public void onFailure(final Throwable caught) {
+                GWT.log("FetchMessageListCommand", caught);
+            }
+        });
+        client.requestUpdate(folder);
     }
 
     public static int binarySearch(final long[] a, final long key) {
@@ -570,85 +518,7 @@ public final class MessageList extends Composite {
 
     private class FetchMessageListCommand implements Command {
         public void execute() {
-            final MessageListServiceAsync service = MessageListService.App.getInstance();
-            if (false) {
-                service.fetchMessages(client.getAccount(), folder, new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        final List allMessages = (List)result;
-                        // RPC deserialization takes time too, finish processing
-                        // this on the next browser event tick to help avoid SSW.
-                        DeferredCommand.add(new AddAllMessagesCommand(allMessages));
-                        //DeferredCommand.add(new BatchAddMessagesCommand(allMessages, 100));
-                    }
-
-                    public void onFailure(final Throwable caught) {
-                        GWT.log("FetchMessageListCommand", caught);
-                    }
-                });
-            } else {
-                service.fetchMessageUids(client.getAccount(), folder, MessageListService.MessageOrder.RECEIVED, new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        final long[] uids = (long[])result;
-                        messages.setUids(uids);
-                    }
-
-                    public void onFailure(final Throwable caught) {
-                        GWT.log("FetchMessageListCommand for UIDs", caught);
-                    }
-                });
-            }
-        }
-
-        /**
-         * Adds all the messages in one step.
-         */
-        private class AddAllMessagesCommand implements Command {
-            private final List allMessages;
-
-            public AddAllMessagesCommand(final List messages) {
-                this.allMessages = messages;
-            }
-
-            public void execute() {
-                // XXX? consider splitting this into a few commands, last elements first
-                messages.addAll(allMessages);
-            }
-        }
-        private class BatchAddMessagesCommand implements Command {
-            private final List remainingMessages;
-            private final int batchSize;
-
-            public BatchAddMessagesCommand(final List messages, final int batchSize) {
-                this.remainingMessages = messages;
-                this.batchSize = batchSize;
-            }
-
-            public void execute() {
-                // XXX? consider splitting this into a few commands, last elements first
-                final Iterator iter = remainingMessages.iterator();
-                final List stackOfBatches = new ArrayList();
-                List currentBatch = new ArrayList();
-                while (iter.hasNext()) {
-                    if (currentBatch.size() < batchSize) {
-                        currentBatch.add(iter.next());
-                    } else {
-                        stackOfBatches.add(0, currentBatch);
-                        currentBatch = new ArrayList();
-                    }
-                }
-                stackOfBatches.add(0, currentBatch);
-
-                final Iterator batchIter = stackOfBatches.iterator();
-                while (batchIter.hasNext()) {
-                    final List batch = (List)batchIter.next();
-                    DeferredCommand.add(new Command() {
-                        public void execute() {
-                            messages.addAll(0, batch);
-                        }
-                    });
-                    DeferredCommand.add(null);
-                }
-            }
+            refresh();
         }
     }
 
@@ -864,14 +734,14 @@ public final class MessageList extends Composite {
 
             {
                 final TableCol checkboxCol = new TableCol();
-                setAttribute(checkboxCol.getElement(), "style", "width:25px;");
+                DOM.setElementAttribute(checkboxCol.getElement(), "style", "width:25px;");
                 DOM.setStyleAttribute(checkboxCol.getElement(), "width", "25px");
                 colSpecs.add(checkboxCol);
             }
 
             {
                 final TableCol flaggedCol = new TableCol();
-                setAttribute(flaggedCol.getElement(), "style", "width:15px;");
+                DOM.setElementAttribute(flaggedCol.getElement(), "style", "width:15px;");
                 DOM.setStyleAttribute(flaggedCol.getElement(), "width", "15px");
                 colSpecs.add(flaggedCol);
             }
@@ -880,14 +750,14 @@ public final class MessageList extends Composite {
                 final TableCol fromCol = new TableCol();
                 //fromCol.addStyleName("gm-MessageList-from-col");
                 //fromCol.setWidth("20ex"); // gmail 27ex
-                setAttribute(fromCol.getElement(), "style", "width:20ex;");
+                DOM.setElementAttribute(fromCol.getElement(), "style", "width:20ex;");
                 DOM.setStyleAttribute(fromCol.getElement(), "width", "20ex");
                 colSpecs.add(fromCol);
             }
 
             {
                 final TableCol toCol = new TableCol();
-                setAttribute(toCol.getElement(), "style", "width:2ex;");
+                DOM.setElementAttribute(toCol.getElement(), "style", "width:2ex;");
                 DOM.setStyleAttribute(toCol.getElement(), "width", "2ex");
                 colSpecs.add(toCol);
             }
@@ -900,7 +770,7 @@ public final class MessageList extends Composite {
             
             {
                 final TableCol subjectCol = new TableCol();
-                setAttribute(subjectCol.getElement(), "style", "width:15px;");
+                DOM.setElementAttribute(subjectCol.getElement(), "style", "width:15px;");
                 DOM.setStyleAttribute(subjectCol.getElement(), "width", "15px");
                 colSpecs.add(subjectCol);
             }
@@ -909,7 +779,7 @@ public final class MessageList extends Composite {
                 final TableCol dateCol = new TableCol();
                 //dateCol.addStyleName("gm-MessageList-date-col");
                 //dateCol.setWidth("9.5ex"); // gmail 9.5ex
-                setAttribute(dateCol.getElement(), "style", "width:9.5ex;");
+                DOM.setElementAttribute(dateCol.getElement(), "style", "width:9.5ex;");
                 DOM.setStyleAttribute(dateCol.getElement(), "width", "9.5ex");
                 colSpecs.add(dateCol);
             }
@@ -977,13 +847,9 @@ public final class MessageList extends Composite {
         }
     }
 
-    private static native void setAttribute(Element elem, String attr, String value) /*-{
-        elem.setAttribute(attr,value);
-    }-*/;
-
     private class AllFilterCommand implements Command {
         public void execute() {
-            DeferredCommand.add(new Command() {
+            DeferredCommand.addCommand(new Command() {
                 public void execute() {
                     messagesFiltered.setFilter(null);
                 }
@@ -999,7 +865,7 @@ public final class MessageList extends Composite {
         }
 
         public final void execute() {
-            DeferredCommand.add(new Command() {
+            DeferredCommand.addCommand(new Command() {
                 public void execute() {
                     messagesFiltered.setFilter(new FilteredEventList.Filter() {
                         public boolean accept(final Object element) {
@@ -1033,7 +899,7 @@ public final class MessageList extends Composite {
 
     private class ToMeFilterCommand implements Command {
         public void execute() {
-            DeferredCommand.add(new Command() {
+            DeferredCommand.addCommand(new Command() {
                 public void execute() {
                     messagesFiltered.setFilter(new FilteredEventList.Filter() {
                         public boolean accept(final Object element) {

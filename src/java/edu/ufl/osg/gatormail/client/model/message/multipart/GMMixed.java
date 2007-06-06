@@ -41,20 +41,23 @@ import java.util.List;
  * @see <a href="http://www.rfc-editor.org/rfc/rfc2046.txt">RFC 2046</a>
  */
 public class GMMixed extends GMPart {
-    private List parts;
+    /**
+     * @gwt.typeArgs <edu.ufl.osg.gatormail.client.model.message.GMPart>
+     */
+    private List/*<GMPart>*/ parts;
 
     public void addPart(final GMPart part) {
         if (parts == null) {
-            parts = new ArrayList();
+            parts = new ArrayList/*<GMPart>*/();
         }
         parts.add(part);
     }
 
-    public List getParts() {
+    public List/*<GMPart>*/ getParts() {
         return parts != null ? parts : Collections.EMPTY_LIST;
     }
 
-    public void setParts(final List parts) {
+    public void setParts(final List/*<GMPart>*/ parts) {
         this.parts = parts;
     }
 }

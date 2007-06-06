@@ -25,7 +25,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMFlags;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
+import edu.ufl.osg.gatormail.client.model.UidValidityChangedException;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
+import edu.ufl.osg.gatormail.client.model.messageList.Filter;
+import edu.ufl.osg.gatormail.client.model.messageList.Prescript;
 import edu.ufl.osg.gatormail.client.services.MessageListService;
 import edu.ufl.osg.gatormail.server.MessageServiceImpl;
 
@@ -89,7 +92,7 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
     /**
      * @gwt.typeArgs <edu.ufl.osg.sandymac.mailui.ui2.client.model.GMMessage>
      */
-    public List<GMMessage> fetchMessages(final Account account, final GMFolder gmFolder) throws SerializableException {
+    public MessageListUpdate fetchMessages(final Account account, final GMFolder gmFolder, final Prescript prescript) throws SerializableException {
         final Session session = MessageServiceImpl.fetchSession(account);
         final Store store = MessageServiceImpl.fetchConnectedStore(session);
 
@@ -101,6 +104,9 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             throw new SerializableException(e.getMessage());
         }
 
+        final UIDFolder uidFolder = (UIDFolder)folder;
+        checkUidValidity(gmFolder, uidFolder);
+
         try {
             folder.open(Folder.READ_ONLY);
         } catch (MessagingException e) {
@@ -109,7 +115,59 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
         }
 
         try {
-            return getMessages(folder, gmFolder, 0, UIDFolder.LASTUID);
+            final Message[] messages;
+            if (Filter.ALL.equals(prescript.getFilter())) {
+                try {
+                    messages = folder.getMessages();
+                } catch (MessagingException e) {
+                    throw new SerializableException();
+                }
+            } else {
+                throw new SerializableException("Filter not yet supported: " + prescript.getFilter());
+            }
+
+            // Prefetch all flags to improve performance.
+            final FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.FLAGS);
+            fp.add(FetchProfile.Item.ENVELOPE);
+            try {
+                folder.fetch(messages, fp);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                // XXX: ignore for now
+            }
+
+            final Comparator<Message> c = new Comparator<Message>() {
+                public int compare(final Message m1, final Message m2) {
+                    try {
+                        return m1.getReceivedDate().compareTo(m2.getReceivedDate());
+                    } catch (MessagingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+
+            try {
+                Arrays.sort(messages, c);
+            } catch (RuntimeException re) {
+                re.printStackTrace();
+                throw re;
+            }
+
+
+            final long[] uids = new long[messages.length];
+            for (int i=0; i < messages.length; i++) {
+                final Message message = messages[i];
+
+                try {
+                    uids[i] = (uidFolder.getUID(message));
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                    throw new SerializableException(e.getMessage());
+                }
+            }
+
+            return new MessageListUpdate(prescript, uids);
         } finally {
             try {
                 folder.close(false);
@@ -117,6 +175,18 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
                 e.printStackTrace();
                 //throw new SerializableException(e.getMessage());
             }
+        }
+    }
+
+    private void checkUidValidity(final GMFolder gmFolder, final UIDFolder uidFolder) throws UidValidityChangedException {
+        long validity;
+        try {
+            validity = uidFolder.getUIDValidity();
+        } catch (MessagingException e) {
+            validity = -1;
+        }
+        if (validity < 0 || validity != gmFolder.getUidValidity()) {
+            throw new UidValidityChangedException(gmFolder.getFullName(), gmFolder.getUidValidity(), validity);
         }
     }
 
@@ -165,8 +235,8 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             }
 
             // TODO: Why is this sometimes null?
-            //final Comparator<Message> c = MESSAGE_ORDERS.get(order);
-            final Comparator<Message> c = new Comparator<Message>() {
+            Comparator<Message> c = MESSAGE_ORDERS.get(order);
+            c = new Comparator<Message>() {
                 public int compare(final Message m1, final Message m2) {
                     try {
                         return m1.getReceivedDate().compareTo(m2.getReceivedDate());
@@ -196,88 +266,6 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             }
 
             return uids;
-        } finally {
-            try {
-                folder.close(false);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                //throw new SerializableException(e.getMessage());
-            }
-        }
-    }
-
-    public MessageListUpdate fetchMessageListChanges(final Account account, final GMFolder gmFolder, final long startUID, final long endUID, final int messageCount) throws SerializableException {
-        final Session session = MessageServiceImpl.fetchSession(account);
-        final Store store = MessageServiceImpl.fetchConnectedStore(session);
-
-        final Folder folder;
-        try {
-            folder = store.getFolder(gmFolder.getFullName());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        if (!(folder instanceof UIDFolder)) {
-            throw new SerializableException("Folder must implement UIDFolder!");
-        }
-
-        final UIDFolder uidFolder = (UIDFolder)folder;
-
-        // XXX: Check folder.getType()
-        try {
-            folder.open(Folder.READ_ONLY);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        try {
-            final MessageListUpdate update = new MessageListUpdate(startUID, endUID);
-            try {
-                // check UID Valididty
-                if (gmFolder.getUidValidity() != uidFolder.getUIDValidity()) {
-                    throw new SerializableException("uidValidity changed, must reload.");
-                }
-
-
-                final Message[] messageRange = uidFolder.getMessagesByUID(startUID, endUID);
-                //assert messageRange.length >= 1;
-
-                System.err.println("messageRange startUID: " + startUID + " : " + (messageRange.length > 1 ? uidFolder.getUID(messageRange[0]) : -1));
-                System.err.println("messageRange endUID: " + endUID + " : " + (messageRange.length > 1 ? uidFolder.getUID(messageRange[messageRange.length-1]) : -1));
-
-                sortByUID(uidFolder, messageRange);
-
-                if (messageRange.length > 0) {
-                    assert uidFolder.getUID(messageRange[0]) >= startUID : "A message with an unexpected lower UID snuck in there.";
-                    assert uidFolder.getUID(messageRange[messageRange.length-1]) <= endUID : "A message with an unexpected higher UID snuck in there.";
-                    assert messageRange.length <= messageCount : "A message snuck into the middle.";
-                }
-
-                // Return still valid UIDs so the ones not found can be pruned.
-                if (messageRange.length < messageCount) {
-                    final long[] uids = new long[messageRange.length];
-                    for (int i=0; i < messageRange.length; i++) {
-                        uids[i] = uidFolder.getUID(messageRange[i]);
-                    }
-                    update.setValidUIDs(uids);
-                }
-
-                // Look for new messages out side our range
-                // XXX? account for removed messages in the middle if possible.
-                if (folder.getMessageCount() != messageCount) {
-                    if (startUID > 0) {
-                        update.setBeforeStart(getMessages(folder, gmFolder, 0, startUID-1));
-                    }
-                    update.setAfterEnd(getMessages(folder, gmFolder, endUID+1, Long.MAX_VALUE));
-                }
-
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                throw new SerializableException(e.getMessage());
-            }
-            return update;
         } finally {
             try {
                 folder.close(false);

@@ -56,6 +56,21 @@ public class Prescript implements Serializable {
         this.order = order;
     }
 
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o instanceof Prescript) {
+            final Prescript prescript = (Prescript)o;
+            return filter.equals(prescript.filter) && order.equals(prescript.order);
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        int result;
+        result = order.hashCode();
+        result = 31 * result + filter.hashCode();
+        return result;
+    }
 
     public String toString() {
         return "Prescript{" + "order=" + order + ", filter=" + filter + '}';

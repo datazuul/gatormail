@@ -105,7 +105,7 @@ public class GMMessage implements Serializable, NamedPropertyChangeSource {
 
     public void setHeaders(final GMMessageHeaders headers) {
         if (getHeaders() != null) {
-            throw new IllegalStateException("Headers must not be set twice.");
+            throw new IllegalStateException("Headers must not be set twice on: " + getUidAsString());
         }
         final Object old = getHeaders();
         this.headers = headers;

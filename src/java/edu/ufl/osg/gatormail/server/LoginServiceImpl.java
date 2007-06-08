@@ -120,9 +120,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
             throw new IllegalStateException("Unknown mail.store.protocol: " + props.getProperty("mail.store.protocol"));
         }
         props.setProperty("mail." + props.getProperty("mail.store.protocol") + ".port", port);
-        System.err.println("mail.store.protocol: " + props.getProperty("mail.store.protocol"));
-        System.err.println("mail." + props.getProperty("mail.store.protocol") + ".host: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".host"));
-        System.err.println("mail." + props.getProperty("mail.store.protocol") + ".port: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".port"));
+        //System.err.println("mail.store.protocol: " + props.getProperty("mail.store.protocol"));
+        //System.err.println("mail." + props.getProperty("mail.store.protocol") + ".host: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".host"));
+        //System.err.println("mail." + props.getProperty("mail.store.protocol") + ".port: " + props.getProperty("mail." + props.getProperty("mail.store.protocol") + ".port"));
         //props.setProperty("", "");
 
         props.setProperty("mail.transport.protocol", "smtp");

@@ -49,8 +49,6 @@ import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
-import edu.ufl.osg.gatormail.client.services.MessageListService;
-import edu.ufl.osg.gatormail.client.services.MessageListServiceAsync;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.FlaggedLabel;
@@ -117,7 +115,7 @@ public final class MessageList extends Composite {
         this.folder = gmFolder;
 
         messageCache = new MessageCache(client, gmFolder);
-        messages = new PrescriptedMessageList(messageCache);
+        messages = new PrescriptedMessageList(client.getAccount(), gmFolder, messageCache);
         messagesReversed = EventLists.reverseEventList(messages);
         messagesFiltered = EventLists.filteredEventList(messagesReversed);
         messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);
@@ -474,18 +472,7 @@ public final class MessageList extends Composite {
     }
 
     private void refresh() {
-        final MessageListServiceAsync service = MessageListService.App.getInstance();
-
-        service.fetchMessages(client.getAccount(), folder, messages.getPrescript(), new AsyncCallback() {
-            public void onSuccess(final Object result) {
-                final MessageListService.MessageListUpdate update = (MessageListService.MessageListUpdate)result;
-                messages.setUids(update.getPrescript(), update.getUids());
-            }
-
-            public void onFailure(final Throwable caught) {
-                GWT.log("FetchMessageListCommand", caught);
-            }
-        });
+        messages.refresh();
         client.requestUpdate(folder);
     }
 

@@ -54,7 +54,7 @@ public class Filter implements Serializable {
     }
 
 
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o instanceof Filter) {
             final Filter filter = (Filter)o;

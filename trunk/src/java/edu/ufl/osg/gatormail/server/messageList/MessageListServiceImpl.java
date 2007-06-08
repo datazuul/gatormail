@@ -89,9 +89,6 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
         });
     }
 
-    /**
-     * @gwt.typeArgs <edu.ufl.osg.sandymac.mailui.ui2.client.model.GMMessage>
-     */
     public MessageListUpdate fetchMessages(final Account account, final GMFolder gmFolder, final Prescript prescript) throws SerializableException {
         final Session session = MessageServiceImpl.fetchSession(account);
         final Store store = MessageServiceImpl.fetchConnectedStore(session);
@@ -155,19 +152,19 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             }
 
 
-            final long[] uids = new long[messages.length];
+            final List<Long> uids = new ArrayList<Long>(messages.length);
             for (int i=0; i < messages.length; i++) {
                 final Message message = messages[i];
 
                 try {
-                    uids[i] = (uidFolder.getUID(message));
+                    uids.add(Long.valueOf(uidFolder.getUID(message)));
                 } catch (MessagingException e) {
                     e.printStackTrace();
                     throw new SerializableException(e.getMessage());
                 }
             }
 
-            return new MessageListUpdate(prescript, uids);
+            return new MessageListUpdate(prescript, uids.toArray(new Long[uids.size()]));
         } finally {
             try {
                 folder.close(false);

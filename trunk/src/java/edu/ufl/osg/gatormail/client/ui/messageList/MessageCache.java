@@ -32,7 +32,7 @@ import edu.ufl.osg.gatormail.client.model.message.GMMessage;
  */
 final class MessageCache {
 
-   private final JavaScriptObject cacheJSO;
+    private final JavaScriptObject cacheJSO;
 
     private final GatorMailWidget client;
 

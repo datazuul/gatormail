@@ -30,7 +30,6 @@ import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.messageList.Prescript;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * RPC service methods to fetch information about the list of messages in a folder.
@@ -38,24 +37,20 @@ import java.util.List;
  * @author Sandy McArthur
  */
 public interface MessageListService extends RemoteService {
-    /**
-     * @return A {@link List} of {@link edu.ufl.osg.gatormail.client.model.message.GMMessage}.
-     * @gwt.typeArgs <edu.ufl.osg.gatormail.client.model.message.GMMessage>
-     */
+
     public MessageListUpdate fetchMessages(Account account, GMFolder gmFolder, Prescript prescript) throws SerializableException;
 
     public long[] fetchMessageUids(Account account, GMFolder GMFolder, MessageOrder order) throws SerializableException;
 
     public static class MessageListUpdate implements Serializable {
         private Prescript prescript;
-        private long[] uids;
+        private Long[] uids = new Long[0];
 
         public MessageListUpdate() {
-            prescript = null;
-            uids = new long[0];
+            this(null, null);
         }
 
-        public MessageListUpdate(final Prescript prescript, final long[] uids) {
+        public MessageListUpdate(final Prescript prescript, final Long[] uids) {
             this.prescript = prescript;
             this.uids = uids;
         }
@@ -64,7 +59,7 @@ public interface MessageListService extends RemoteService {
             return prescript;
         }
 
-        public long[] getUids() {
+        public Long[] getUids() {
             return uids;
         }
     }

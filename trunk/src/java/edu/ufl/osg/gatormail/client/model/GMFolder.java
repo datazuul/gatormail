@@ -266,7 +266,15 @@ public final class GMFolder implements IsSerializable, PropertyChangeSource {
         pcs.addPropertyChangeListener(listener);
     }
 
+    public void addPropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 }

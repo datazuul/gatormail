@@ -39,11 +39,13 @@ public interface MessageServiceAsync {
 
     void fetchMessageBody(Account account, GMMessage message, AsyncCallback async);
 
+    void fetchMessageParts(Account account, GMMessage message, MessageService.MessagePartsSet parts, AsyncCallback async);
+
     void deleteMessages(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
 
     void deleteMessagesForever(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
 
     void reportSpam(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
-    
+
     void reportHam(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);
 }

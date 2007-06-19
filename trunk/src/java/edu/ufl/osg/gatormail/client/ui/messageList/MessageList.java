@@ -584,11 +584,12 @@ public final class MessageList extends Composite {
 
             if (message.getHeaders() == null) {
                 final MessageServiceAsync service = MessageService.App.getInstance();
-                service.fetchHeaders(client.getAccount(), message, new AsyncCallback() {
+                final MessageService.MessagePartsSet parts = MessageService.MessagePartsSet.create(MessageService.MessagePart.HEADERS, MessageService.MessagePart.FLAGS);
+                service.fetchMessageParts(client.getAccount(), message, parts, new AsyncCallback() {
                     public void onSuccess(final Object result) {
-                        message.setHeaders((GMMessageHeaders)result);
+                        final MessageService.MessagePartsUpdate update = (MessageService.MessagePartsUpdate)result;
+                        update.applyUpdate(message);
                     }
-
                     public void onFailure(final Throwable caught) {
                         GWT.log("Problem fetching headers", caught);
                     }
@@ -676,6 +677,17 @@ public final class MessageList extends Composite {
 
         public void onAttach(final Object obj, final TableBodyGroup rowGroup) {
             final GMMessage message = (GMMessage)obj;
+            final PropertyChangeListener pcl = new PropertyChangeListener() {
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    updateRowGroupSeenState(message, rowGroup);
+                }
+            };
+            messageToPropertyChangeListeners.put(message, pcl);
+            message.addPropertyChangeListener("flags", pcl);
+            updateRowGroupSeenState(message, rowGroup);
+        }
+
+        private void updateRowGroupSeenState(final GMMessage message, final TableRowGroup rowGroup) {
             if (message.getFlags() != null) {
                 if (message.getFlags().contains(GMFlags.GMFlag.SEEN)) {
                     rowGroup.addStyleName("gm-MessageList-Message-seen");
@@ -685,12 +697,6 @@ public final class MessageList extends Composite {
                     rowGroup.addStyleName("gm-MessageList-Message-unseen");
                 }
             }
-            final PropertyChangeListener pcl = new PropertyChangeListener() {
-                public void propertyChange(final PropertyChangeEvent evt) {
-                }
-            };
-            messageToPropertyChangeListeners.put(message, pcl);
-            message.addPropertyChangeListener("flags", pcl);
         }
 
         public void onAttach(final TableHeaderGroup rowGroup) {

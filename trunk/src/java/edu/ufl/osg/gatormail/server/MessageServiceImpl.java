@@ -24,6 +24,7 @@ import com.google.gwt.user.client.rpc.SerializableException;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMAddress;
+import edu.ufl.osg.gatormail.client.model.GMFlags;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.GMInternetAddress;
 import edu.ufl.osg.gatormail.client.model.GMNewsAddress;
@@ -45,6 +46,7 @@ import edu.ufl.osg.gatormail.client.model.message.text.GMHtml;
 import edu.ufl.osg.gatormail.client.model.message.text.GMPlain;
 import edu.ufl.osg.gatormail.client.services.LoginService;
 import edu.ufl.osg.gatormail.client.services.MessageService;
+import edu.ufl.osg.gatormail.server.messageList.MessageListServiceImpl;
 import edu.ufl.osg.gatormail.server.state.PrivateStateCipher;
 import net.sf.classifier4J.summariser.ISummariser;
 import net.sf.classifier4J.summariser.SimpleSummariser;
@@ -76,6 +78,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -244,6 +247,82 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             }
         }
         return part;
+    }
+
+    public MessagePartsUpdate fetchMessageParts(final Account account, final GMMessage gmMessage, final MessagePartsSet parts) throws SerializableException {
+        final Session session = fetchSession(account);
+        final Store store = fetchConnectedStore(session);
+
+        final MessagePartsUpdate mpu = new MessagePartsUpdate();
+
+        final GMFolder gmFolder = gmMessage.getFolder();
+        final Folder folder;
+        try {
+            folder = store.getFolder(gmFolder.getFullName());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SerializableException(e.getMessage());
+        }
+
+        // XXX: Check folder.getType()
+        try {
+            folder.open(Folder.READ_ONLY);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SerializableException(e.getMessage());
+        }
+
+        try {
+            final Message message;
+
+            try {
+                final UIDFolder uidFolder = (UIDFolder)folder;
+
+                // Check that the UID Validity hasn't changed
+                final long uidValidity = uidFolder.getUIDValidity();
+                if (gmFolder.getUidValidity() != uidValidity) {
+                    throw new UidValidityChangedException(folder.getFullName(), gmFolder.getUidValidity(), uidValidity);
+                }
+
+                message = uidFolder.getMessageByUID(gmMessage.getUid());
+
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new SerializableException(e.getMessage());
+            }
+
+            if (parts.contains(MessagePart.HEADERS)) {
+                mpu.setHeaders(convertHeaders(message));
+            }
+
+            if (parts.contains(MessagePart.FLAGS)) {
+                mpu.setFlags(convertFlags(message));
+            }
+
+            if (parts.contains(MessagePart.SUMMARY)) {
+                mpu.setSummary(createSummary(message) );
+            }
+
+            if (parts.contains(MessagePart.BODY)) {
+                try {
+                    mpu.setBody(convertMessageParts(account, folder, message));
+                } catch (MessagingException e) {
+                    throw new SerializableException("MessagingException message: " + gmMessage + ", reason: " + e.getMessage());
+
+                } catch (IOException e) {
+                    throw new SerializableException("IOException message: " + gmMessage + ", reason: " + e.getMessage());
+                }
+            }
+
+            return mpu;
+        } finally {
+            try {
+                folder.close(false);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                throw new SerializableException(e.getMessage());
+            }
+        }
     }
 
     public DeleteMessagesResponse deleteMessages(final Account account, final List/*<GMMessage>*/ messages) throws SerializableException {
@@ -661,6 +740,23 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             return from;
         }
         return null;
+    }
+
+    private static GMFlags convertFlags(final Message message) throws SerializableException {
+        try {
+            final GMFlags gmFlags = new GMFlags();
+            final Flags flags = message.getFlags();
+            for (final Flags.Flag flag : Arrays.asList(flags.getSystemFlags())) {
+                gmFlags.addFlag(MessageListServiceImpl.FLAGS_MAP.get(flag));
+            }
+            for (final String flag : Arrays.asList(flags.getUserFlags())) {
+                gmFlags.addFlag(flag);
+            }
+            return gmFlags;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new SerializableException(e.getMessage());
+        }
     }
 
     private static final GMMessageSummary EMPTY_SUMMARY = new GMMessageSummary();

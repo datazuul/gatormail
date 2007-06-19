@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public class MessageListServiceImpl extends RemoteServiceServlet implements MessageListService {
 
-    private static final Map<Flags.Flag, GMFlags.GMFlag> FLAGS_MAP = new HashMap<Flags.Flag, GMFlags.GMFlag>();
+    public static final Map<Flags.Flag, GMFlags.GMFlag> FLAGS_MAP = new HashMap<Flags.Flag, GMFlags.GMFlag>();
     private static final Map<MessageOrder, Comparator<Message>> MESSAGE_ORDERS = new HashMap<MessageOrder, Comparator<Message>>();
 
     static {

@@ -20,39 +20,39 @@
 
 package edu.ufl.osg.gatormail.client.model;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Bean for a message's Flags.
  *
  * @author Sandy McArthur
  */
-public class GMFlags implements IsSerializable {
+public class GMFlags implements Serializable {
 
     /**
      * @gwt.typeArgs <edu.ufl.osg.gatormail.client.model.GMFlags.GMFlag>
      */
-    private List/*<GMFlag>*/ systemFlags;
+    private Set/*<GMFlag>*/ systemFlags;
 
     /**
      * @gwt.typeArgs <java.lang.String>
      */
-    private List/*<String>*/ userFlags;
+    private Set/*<String>*/ userFlags;
 
 
-    public List getSystemFlags() {
+    public Collection getSystemFlags() {
         if (systemFlags == null) {
-            systemFlags = new ArrayList();
+            systemFlags = new HashSet();
         }
         return systemFlags;
     }
 
-    public List getUserFlags() {
+    public Collection getUserFlags() {
         if (userFlags == null) {
-            userFlags = new ArrayList();
+            userFlags = new HashSet();
         }
         return userFlags;
     }
@@ -69,11 +69,15 @@ public class GMFlags implements IsSerializable {
         getSystemFlags().add(flag);
     }
 
+    public void addFlag(final String flag) {
+        getUserFlags().add(flag);
+    }
+
 
     /**
      * Bean for a Flag.
      */
-    public static class GMFlag implements IsSerializable {
+    public static class GMFlag implements Serializable {
         public static final GMFlag ANSWERED = new GMFlag("ANSWERED");
         public static final GMFlag DELETED = new GMFlag("DELETED");
         public static final GMFlag DRAFT = new GMFlag("DRAFT");
@@ -83,7 +87,6 @@ public class GMFlags implements IsSerializable {
         public static final GMFlag USER = new GMFlag("USER");
 
         private String name = null;
-
 
         public GMFlag() {
         }

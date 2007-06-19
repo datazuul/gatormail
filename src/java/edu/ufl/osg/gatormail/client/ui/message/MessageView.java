@@ -28,8 +28,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.model.message.GMPart;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
@@ -74,29 +72,25 @@ public class MessageView extends Composite {
         bodyView = new MessageBodyView(message);
         vp.add(bodyView);
 
+        final MessageService.MessagePartsSet mps = new MessageService.MessagePartsSet();
         if (message.getHeaders() == null) {
-            final MessageServiceAsync service = MessageService.App.getInstance();
-            service.fetchHeaders(client.getAccount(), message, new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    message.setHeaders((GMMessageHeaders)result);
-                }
-
-                public void onFailure(final Throwable caught) {
-                    GWT.log("Problem fetching headers", caught);
-                }
-            });
+            mps.add(new MessageService.MessagePart("HEADERS"));
         }
         if (message.getBody() == null) {
-            final MessageServiceAsync service = MessageService.App.getInstance();
-            service.fetchMessageBody(client.getAccount(), message, new AsyncCallback() {
-                public void onSuccess(final Object result) {
-                    message.setBody((GMPart)result);
-                }
-                public void onFailure(final Throwable caught) {
-                    GWT.log("Problem fetching Body", caught);
-                }
-            });
+            mps.add(new MessageService.MessagePart("BODY"));
         }
+
+        final MessageServiceAsync service = MessageService.App.getInstance();
+        service.fetchMessageParts(client.getAccount(), message, mps, new AsyncCallback() {
+            public void onSuccess(final Object result) {
+                final MessageService.MessagePartsUpdate update = (MessageService.MessagePartsUpdate)result;
+                update.applyUpdate(message);
+            }
+
+            public void onFailure(final Throwable caught) {
+                GWT.log("Problem fetching parts: " + mps, caught);
+            }
+        });
     }
 
     

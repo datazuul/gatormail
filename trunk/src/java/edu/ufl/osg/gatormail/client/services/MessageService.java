@@ -21,6 +21,9 @@
 package edu.ufl.osg.gatormail.client.services;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.SerializableException;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
@@ -32,8 +35,11 @@ import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
 import edu.ufl.osg.gatormail.client.model.message.GMPart;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,10 +48,6 @@ import java.util.Set;
  * @author Sandy McArthur
  */
 public interface MessageService extends RemoteService {
-
-    public GMMessageHeaders fetchHeaders(Account account, GMMessage message) throws SerializableException;
-    public GMMessageSummary fetchSummary(Account account, GMMessage message) throws SerializableException;
-    public GMPart fetchMessageBody(Account account, GMMessage message) throws SerializableException;
 
     public MessagePartsUpdate fetchMessageParts(Account account, GMMessage message, MessagePartsSet parts) throws SerializableException;
 
@@ -163,6 +165,10 @@ public interface MessageService extends RemoteService {
             return set != null && set.contains(part);
         }
 
+        public boolean isEmpty() {
+            return set == null || set.isEmpty();
+        }
+
         public String toString() {
             return "" + set;
         }
@@ -253,12 +259,76 @@ public interface MessageService extends RemoteService {
     public static class App {
         private static MessageServiceAsync ourInstance = null;
 
+        /**
+         * A Map of Accounts to a Map of Messages to Message Parts.
+         */
+        private static Map/*<Account, Map<GMMessage, MessagePartsSet>>*/ accountsToMessages = new HashMap/*<Account, Map<GMMessage, MessagePartsSet>>*/();
+
+        private static Command fetcher;
+
         public static synchronized MessageServiceAsync getInstance() {
             if (ourInstance == null) {
                 ourInstance = (MessageServiceAsync)GWT.create(MessageService.class);
                 ((ServiceDefTarget)ourInstance).setServiceEntryPoint(GWT.getModuleBaseURL() + "message");
             }
             return ourInstance;
+        }
+
+        /**
+         * Batch message part fetches.
+         *
+         * @param account Account associated with the message.
+         * @param message GMMessage to fetch parts of.
+         * @param part Message part to fetch.
+         */
+        public static void fetchMessagePart(final Account account, final GMMessage message, final MessagePart part) {
+            Map/*<GMMessage, MessagePartsSet>*/ messagesToParts = (Map)accountsToMessages.get(account);
+            if (messagesToParts == null) {
+                messagesToParts = new HashMap/*<GMMessage, MessagePartsSet>*/();
+                accountsToMessages.put(account, messagesToParts);
+            }
+
+            MessagePartsSet parts = (MessagePartsSet)messagesToParts.get(message);
+            if (parts == null) {
+                parts = new MessagePartsSet();
+                messagesToParts.put(message, parts);
+            }
+            parts.add(part);
+
+            if (fetcher == null) {
+                fetcher = new FetcherCommand();
+                DeferredCommand.addCommand(fetcher);
+            }
+        }
+
+        private static class FetcherCommand implements Command {
+            public void execute() {
+                fetcher = null;
+                final MessageServiceAsync service = getInstance();
+                final Iterator accountIter = accountsToMessages.keySet().iterator();
+                while (accountIter.hasNext()) {
+                    final Account account = (Account)accountIter.next();
+                    final Map/*<GMMessage, MessagePartsSet>*/ messagesToParts = (Map)accountsToMessages.get(account);
+                    accountIter.remove();
+
+                    final Iterator messageIter = messagesToParts.keySet().iterator();
+                    while (messageIter.hasNext()) {
+                        final GMMessage message = (GMMessage)messageIter.next();
+                        final MessagePartsSet parts = (MessagePartsSet)messagesToParts.get(message);
+                        messageIter.remove();
+
+                        service.fetchMessageParts(account, message, parts, new AsyncCallback() {
+                            public void onSuccess(final Object result) {
+                                final MessagePartsUpdate update = (MessagePartsUpdate)result;
+                                update.applyUpdate(message);
+                            }
+                            public void onFailure(final Throwable caught) {
+                                GWT.log("Problem fetching parts " + parts, caught);
+                            }
+                        });
+                    }
+                }
+            }
         }
     }
 }

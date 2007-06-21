@@ -33,12 +33,6 @@ import java.util.List;
  */
 public interface MessageServiceAsync {
 
-    void fetchHeaders(Account account, GMMessage message, AsyncCallback async);
-
-    void fetchSummary(Account account, GMMessage message, AsyncCallback async);
-
-    void fetchMessageBody(Account account, GMMessage message, AsyncCallback async);
-
     void fetchMessageParts(Account account, GMMessage message, MessageService.MessagePartsSet parts, AsyncCallback async);
 
     void deleteMessages(Account account, List/*<GMMessage>*/ messages, AsyncCallback async);

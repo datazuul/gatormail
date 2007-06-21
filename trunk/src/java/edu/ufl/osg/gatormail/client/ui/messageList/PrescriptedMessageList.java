@@ -114,6 +114,8 @@ final class PrescriptedMessageList extends AbstractEventList implements EventLis
     }
 
     private void setUids(final Long[] uids) {
+        // TODO: convert this back to a long[] and optimize the Diff code.
+
         if (uids == null) {
             throw new NullPointerException("uids cannot be null.");
         }

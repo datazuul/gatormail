@@ -20,8 +20,6 @@
 
 package edu.ufl.osg.gatormail.client.ui.message;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -29,7 +27,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.services.MessageService;
-import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
 
 /**
@@ -72,25 +69,12 @@ public class MessageView extends Composite {
         bodyView = new MessageBodyView(message);
         vp.add(bodyView);
 
-        final MessageService.MessagePartsSet mps = new MessageService.MessagePartsSet();
         if (message.getHeaders() == null) {
-            mps.add(new MessageService.MessagePart("HEADERS"));
+            MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.HEADERS);
         }
         if (message.getBody() == null) {
-            mps.add(new MessageService.MessagePart("BODY"));
+            MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.BODY);
         }
-
-        final MessageServiceAsync service = MessageService.App.getInstance();
-        service.fetchMessageParts(client.getAccount(), message, mps, new AsyncCallback() {
-            public void onSuccess(final Object result) {
-                final MessageService.MessagePartsUpdate update = (MessageService.MessagePartsUpdate)result;
-                update.applyUpdate(message);
-            }
-
-            public void onFailure(final Throwable caught) {
-                GWT.log("Problem fetching parts: " + mps, caught);
-            }
-        });
     }
 
     

@@ -164,9 +164,9 @@ import java.util.Set;
  */
 public class SimpleDiff implements DiffAlgorithm {
 
-    static final int NOT_FOUND_i = -2;
-    static final int NOT_FOUND_j = -1;
-    static final int EOS = Integer.MAX_VALUE;
+    private static final int NOT_FOUND_i = -2;
+    private static final int NOT_FOUND_j = -1;
+    private static final int EOS = Integer.MAX_VALUE;
 
     public SimpleDiff() {
     }
@@ -275,7 +275,7 @@ public class SimpleDiff implements DiffAlgorithm {
      * @param orig the original sequence of items
      * @param rev  the revised sequence of items
      */
-    protected Map buildEqSet(final Object[] orig, final Object[] rev) {
+    private Map buildEqSet(final Object[] orig, final Object[] rev) {
         // construct a set of the objects that orig and rev have in common
 
         // first construct a set containing all the elements in orig
@@ -304,7 +304,7 @@ public class SimpleDiff implements DiffAlgorithm {
      * @param seq a sequence of objects
      * @param NF  the not found marker
      */
-    protected int[] buildIndex(final Map eqs, final Object[] seq, final int NF) {
+    private int[] buildIndex(final Map eqs, final Object[] seq, final int NF) {
         final int[] result = new int[seq.length + 1];
         for (int i = 0; i < seq.length; i++) {
             final Integer value = (Integer)eqs.get(seq[i]);

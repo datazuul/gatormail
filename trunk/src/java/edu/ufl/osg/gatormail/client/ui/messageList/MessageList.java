@@ -48,7 +48,6 @@ import edu.ufl.osg.gatormail.client.model.GMFlags;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
 import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
-import edu.ufl.osg.gatormail.client.model.message.GMMessageSummary;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.FlaggedLabel;
@@ -583,17 +582,10 @@ public final class MessageList extends Composite {
             rowGroup.add(tr);
 
             if (message.getHeaders() == null) {
-                final MessageServiceAsync service = MessageService.App.getInstance();
-                final MessageService.MessagePartsSet parts = MessageService.MessagePartsSet.create(MessageService.MessagePart.HEADERS, MessageService.MessagePart.FLAGS);
-                service.fetchMessageParts(client.getAccount(), message, parts, new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        final MessageService.MessagePartsUpdate update = (MessageService.MessagePartsUpdate)result;
-                        update.applyUpdate(message);
-                    }
-                    public void onFailure(final Throwable caught) {
-                        GWT.log("Problem fetching headers", caught);
-                    }
-                });
+                MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.HEADERS);
+            }
+            if (message.getFlags() == null) {
+                MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.FLAGS);
             }
 
             rowGroup.addMouseListener(new TableRowGroup.MouseListener() {
@@ -826,16 +818,7 @@ public final class MessageList extends Composite {
             rowGroup.add(summaryRow);
 
             if (message.getSummary() == null) {
-                final MessageServiceAsync service = MessageService.App.getInstance();
-                service.fetchSummary(client.getAccount(), message, new AsyncCallback() {
-                    public void onSuccess(final Object result) {
-                        message.setSummary((GMMessageSummary)result);
-                    }
-
-                    public void onFailure(final Throwable caught) {
-                        GWT.log("Problem fetching summary", caught);
-                    }
-                });
+                MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.SUMMARY);
             }
         }
     }

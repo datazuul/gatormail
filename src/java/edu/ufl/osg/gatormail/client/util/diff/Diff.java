@@ -104,26 +104,26 @@ import java.util.Arrays;
  * @see Delta
  * @see DiffAlgorithm
  */
-public class Diff extends ToString {
+public final class Diff extends ToString {
     /**
      * The standard line separator.
      */
-    public static final String NL = "\n";
+    static final String NL = "\n";
 
     /**
      * The line separator to use in RCS format output.
      */
-    public static final String RCS_EOL = "\n";
+    static final String RCS_EOL = "\n";
 
     /**
      * The original sequence.
      */
-    protected final Object[] orig;
+    private final Object[] orig;
 
     /**
      * The differencing algorithm to use.
      */
-    protected DiffAlgorithm algorithm;
+    private DiffAlgorithm algorithm;
 
     /**
      * Create a differencing object using the default algorithm
@@ -153,7 +153,7 @@ public class Diff extends ToString {
             this.algorithm = defaultAlgorithm();
     }
 
-    protected DiffAlgorithm defaultAlgorithm() {
+    private DiffAlgorithm defaultAlgorithm() {
         return new SimpleDiff();
     }
 

@@ -81,6 +81,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Basic implementation of {@link edu.ufl.osg.gatormail.client.services.MessageService}.
@@ -105,151 +106,12 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
         }
     }
 
-    public GMMessageHeaders fetchHeaders(final Account account, final GMMessage gmMessage) throws SerializableException {
-        final Session session = fetchSession(account);
-        final Store store = fetchConnectedStore(session);
-
-        final GMFolder gmFolder = gmMessage.getFolder();
-        final Folder folder;
-        try {
-            folder = store.getFolder(gmFolder.getFullName());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        // XXX: Check folder.getType()
-        try {
-            folder.open(Folder.READ_ONLY);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        try {
-            final Message message;
-
-            try {
-                final UIDFolder uidFolder = (UIDFolder)folder;
-                message = uidFolder.getMessageByUID(gmMessage.getUid());
-
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                throw new SerializableException(e.getMessage());
-            }
-
-            return convertHeaders(message);
-        } finally {
-            try {
-                folder.close(false);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                throw new SerializableException(e.getMessage());
-            }
-        }
-    }
-
-    public GMMessageSummary fetchSummary(final Account account, final GMMessage gmMessage) throws SerializableException {
-        final Session session = fetchSession(account);
-        final Store store = fetchConnectedStore(session);
-
-        final GMFolder gmFolder = gmMessage.getFolder();
-        final Folder folder;
-        try {
-            folder = store.getFolder(gmFolder.getFullName());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        // XXX: Check folder.getType()
-        try {
-            folder.open(Folder.READ_ONLY);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
-        }
-
-        try {
-            final Message message;
-
-            try {
-                final UIDFolder uidFolder = (UIDFolder)folder;
-                message = uidFolder.getMessageByUID(gmMessage.getUid());
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                throw new SerializableException(e.getMessage());
-            }
-
-            return createSummary(message);
-        } finally {
-            try {
-                folder.close(false);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                throw new SerializableException(e.getMessage());
-            }
-        }
-    }
-
-    public GMPart fetchMessageBody(final Account account, final GMMessage gmMessage) throws SerializableException {
-        final Session session = fetchSession(account);
-        final Store store = fetchConnectedStore(session);
-
-        GMPart part = null;
-        try {
-            Folder folder = null;
-            try {
-                final GMFolder gmFolder = gmMessage.getFolder();
-                // XXX: Don't assume all messages are from the same folder.
-                try {
-                    folder = store.getFolder(gmFolder.getFullName());
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                    throw new SerializableException(e.getMessage());
-                }
-
-                folder.open(Folder.READ_ONLY);
-
-                final UIDFolder uidFolder = (UIDFolder)folder;
-
-                // Check that the UID Validity hasn't changed
-                final long uidValidity = uidFolder.getUIDValidity();
-                if (gmFolder.getUidValidity() != uidValidity) {
-                    throw new UidValidityChangedException(folder.getFullName(), gmFolder.getUidValidity(), uidValidity);
-                }
-
-                final Message message = uidFolder.getMessageByUID(gmMessage.getUid());
-
-                part = convertMessageParts(account, folder, message);
-
-            } catch (MessagingException e) {
-                throw new SerializableException("MessagingException message: " + gmMessage + ", reason: " + e.getMessage());
-
-            } catch (IOException e) {
-                throw new SerializableException("IOException message: " + gmMessage + ", reason: " + e.getMessage());
-
-            } finally {
-                if (folder != null) {
-                    try {
-                        folder.close(false);
-                    } catch (MessagingException e) {
-                        // ignore
-                    }
-                }
-            }
-
-        } finally {
-            try {
-                store.close();
-            } catch (MessagingException e) {
-                // swallow
-            }
-        }
-        return part;
-    }
-
     public MessagePartsUpdate fetchMessageParts(final Account account, final GMMessage gmMessage, final MessagePartsSet parts) throws SerializableException {
+        if (parts.isEmpty()) {
+            // XXX? log this?
+            return new MessagePartsUpdate();
+        }
+
         final Session session = fetchSession(account);
         final Store store = fetchConnectedStore(session);
 
@@ -779,7 +641,12 @@ public class MessageServiceImpl extends RemoteServiceServlet implements MessageS
             gmSummary.setSample(stripLineFeeds(text));
 
             final ISummariser summariser = new SimpleSummariser();
-            final String summary = summariser.summarise(text, 1);
+            final String summary;
+            try {
+                summary = summariser.summarise(text, 1);
+            } catch (NoSuchElementException nsee) {
+                return EMPTY_SUMMARY;
+            }
 
             String oneLiner = stripLineFeeds(summary);
             if (oneLiner.length() > 250) {

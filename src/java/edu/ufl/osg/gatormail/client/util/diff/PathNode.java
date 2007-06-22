@@ -76,139 +76,89 @@
 
 package edu.ufl.osg.gatormail.client.util.diff;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 /**
- * A Revision holds the series of deltas that describe the differences between
- * two sequences.
+ * A node in a diffpath.
  *
  * @author <a href="mailto:juanco@suigeneris.org">Juanco Anez</a>
- * @author <a href="mailto:bwm@hplb.hpl.hp.com">Brian McBride</a>
  * @version $Revision: 1.1 $ $Date: 2006/03/12 00:24:21 $
- * @see Delta
- * @see Diff
- * @see Chunk
+ * @see DiffNode
+ * @see Snake
  */
-public final class Revision extends ToString {
-
-    private List/*<Delta>*/ deltas = new ArrayList/*<Delta>*/();
+public abstract class PathNode {
+    /**
+     * Position in the original sequence.
+     */
+    public final int i;
+    /**
+     * Position in the revised sequence.
+     */
+    public final int j;
+    /**
+     * The previous node in the path.
+     */
+    public final PathNode prev;
 
     /**
-     * Creates an empty Revision.
+     * Concatenates a new path node with an existing diffpath.
+     *
+     * @param i    The position in the original sequence for the new node.
+     * @param j    The position in the revised sequence for the new node.
+     * @param prev The previous node in the path.
      */
-    public Revision() {
+    public PathNode(final int i, final int j, final PathNode prev) {
+        this.i = i;
+        this.j = j;
+        this.prev = prev;
     }
 
     /**
-     * Adds a delta to this revision.
+     * Is this node a {@link Snake Snake node}?
      *
-     * @param delta the {@link Delta Delta} to add.
+     * @return true if this is a {@link Snake Snake node}
      */
-    public synchronized void addDelta(final Delta delta) {
-        if (delta == null) {
-            throw new IllegalArgumentException("new delta is null");
+    public abstract boolean isSnake();
+
+    /**
+     * Is this a bootstrap node?
+     * <p/>
+     * In bottstrap nodes one of the two corrdinates is less than zero.
+     *
+     * @return tru if this is a bootstrap node.
+     */
+    public boolean isBootstrap() {
+        return i < 0 || j < 0;
+    }
+
+    /**
+     * Skips sequences of {@link DiffNode DiffNodes} until a {@link Snake} or
+     * bootstrap node is found, or the end of the path is reached.
+     *
+     * @return The next first {@link Snake} or bootstrap node in the path, or
+     *         <code>null</code> if none found.
+     */
+    public final PathNode previousSnake() {
+        if (isBootstrap())
+            return null;
+        if (!isSnake() && prev != null)
+            return prev.previousSnake();
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String toString() {
+        final StringBuffer buf = new StringBuffer("[");
+        PathNode node = this;
+        while (node != null) {
+            buf.append("(");
+            buf.append(Integer.toString(node.i));
+            buf.append(",");
+            buf.append(Integer.toString(node.j));
+            buf.append(")");
+            node = node.prev;
         }
-        deltas.add(delta);
+        buf.append("]");
+        return buf.toString();
     }
-
-    /**
-     * Adds a delta to the start of this revision.
-     *
-     * @param delta the {@link Delta Delta} to add.
-     */
-    public synchronized void insertDelta(final Delta delta) {
-        if (delta == null) {
-            throw new IllegalArgumentException("new delta is null");
-        }
-        deltas.add(0, delta);
-    }
-
-    /**
-     * Retrieves a delta from this revision by position.
-     *
-     * @param i the position of the delta to retrieve.
-     * @return the specified delta
-     */
-    public Delta getDelta(final int i) {
-        return (Delta)deltas.get(i);
-    }
-
-    /**
-     * An Iterator of {@link Delta}s.
-     *
-     * @return an Iterator of {@link Delta}s.
-     */
-    public Iterator/*<Delta>*/ iterator() {
-        return deltas.iterator();
-    }
-
-    /**
-     * Returns the number of deltas in this revision.
-     *
-     * @return the number of deltas.
-     */
-    public int size() {
-        return deltas.size();
-    }
-
-    /**
-     * Applies the series of deltas in this revision as patches to the given
-     * text.
-     *
-     * @param src the text to patch, which the method doesn't change.
-     * @return the resulting text after the patches have been applied.
-     * @throws PatchFailedException if any of the patches cannot be applied.
-     */
-    public Object[] patch(final Object[] src) throws PatchFailedException {
-        final List target = new ArrayList(Arrays.asList(src));
-        applyTo(target);
-        return target.toArray();
-    }
-
-    /**
-     * Applies the series of deltas in this revision as patches to the given
-     * text.
-     *
-     * @param target the text to patch.
-     * @throws PatchFailedException if any of the patches cannot be applied.
-     */
-    public synchronized void applyTo(final List target) throws PatchFailedException {
-        final ListIterator i = deltas.listIterator(deltas.size());
-        while (i.hasPrevious()) {
-            final Delta delta = (Delta)i.previous();
-            delta.patch(target);
-        }
-    }
-
-    /**
-     * Converts this revision into its Unix diff style string representation.
-     *
-     * @param s a {@link StringBuffer StringBuffer} to which the string
-     *          representation will be appended.
-     */
-    public synchronized void toString(final StringBuffer s) {
-        final Iterator i = deltas.iterator();
-        while (i.hasNext()) {
-            ((Delta)i.next()).toString(s);
-        }
-    }
-
-    /**
-     * Accepts a visitor.
-     *
-     * @param visitor the {@link RevisionVisitor} visiting this instance
-     */
-    public void accept(final RevisionVisitor visitor) {
-        visitor.visit(this);
-        final Iterator iter = deltas.iterator();
-        while (iter.hasNext()) {
-            ((Delta)iter.next()).accept(visitor);
-        }
-    }
-
 }

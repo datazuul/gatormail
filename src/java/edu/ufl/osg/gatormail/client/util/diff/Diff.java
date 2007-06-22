@@ -155,6 +155,7 @@ public final class Diff extends ToString {
 
     private DiffAlgorithm defaultAlgorithm() {
         return new SimpleDiff();
+        //return new MyersDiff();
     }
 
     /**
@@ -197,10 +198,15 @@ public final class Diff extends ToString {
      * @return a Revision describing the differences
      */
     public Revision diff(final Object[] rev) throws DifferentiationFailedException {
-        if (orig.length == 0 && rev.length == 0)
+        if (orig.length == 0 && rev.length == 0) {
             return new Revision();
-        else
+        } else if (orig.length == 0) {
+            final Revision revision = new Revision();
+            revision.addDelta(Delta.newDelta(new Chunk(orig, 0, 0), new Chunk(rev, 0, rev.length)));
+            return revision;
+        } else {
             return algorithm.diff(orig, rev);
+        }
     }
 
     /**

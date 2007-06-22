@@ -137,7 +137,7 @@ public class MessageListServiceImpl extends RemoteServiceServlet implements Mess
             final Comparator<Message> c = new Comparator<Message>() {
                 public int compare(final Message m1, final Message m2) {
                     try {
-                        return m1.getReceivedDate().compareTo(m2.getReceivedDate());
+                        return m2.getReceivedDate().compareTo(m1.getReceivedDate());
                     } catch (MessagingException e) {
                         throw new RuntimeException(e);
                     }

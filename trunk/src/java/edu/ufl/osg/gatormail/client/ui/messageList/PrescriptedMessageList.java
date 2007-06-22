@@ -21,6 +21,8 @@
 package edu.ufl.osg.gatormail.client.ui.messageList;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import edu.ufl.osg.gatormail.client.model.Account;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
@@ -43,6 +45,7 @@ import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Iterator;
 
 /**
  * Presents an ondered {@link EventList} of {@link edu.ufl.osg.gatormail.client.model.message.GMMessage}
@@ -125,34 +128,41 @@ final class PrescriptedMessageList extends AbstractEventList implements EventLis
 
         this.uids = uids;
 
-        for (int r=0; r < revision.size(); r++) {
-            final Delta delta = revision.getDelta(r);
-            if (delta instanceof DeleteDelta) {
-                final DeleteDelta deleteDelta = (DeleteDelta)delta;
-                final Chunk original = deleteDelta.getOriginal();
-                final Chunk revised = deleteDelta.getRevised();
-                //GWT.log("D: " + revised.first() + "," + (revised.first() + original.size()), null);
-                fireListEvent(ListEvent.createRemoved(this, revised.first(), revised.first() + original.size()));
-            } else if (delta instanceof ChangeDelta) {
-                final ChangeDelta changeDelta = (ChangeDelta)delta;
-                final Chunk original = changeDelta.getOriginal();
-                final Chunk revised = changeDelta.getRevised();
-                if (original.size() == revised.size()) {
-                    //GWT.log("C: " + revised.first() + "," + (revised.first() + original.size()), null);
-                    fireListEvent(ListEvent.createChanged(this, revised.first(), revised.first() + revised.size()));
-                } else {
-                    //GWT.log("D: " + revised.first() + "," + (revised.first() + original.size()), null);
-                    fireListEvent(ListEvent.createRemoved(this, revised.first(), revised.first() + original.size()));
-                    //GWT.log("A: " + revised.first() + "," + (revised.first() + revised.size()), null);
-                    fireListEvent(ListEvent.createAdded(this, revised.first(), revised.first() + revised.size()));
+        final Iterator deltsIter = revision.iterator();
+        if (deltsIter.hasNext()) {
+            DeferredCommand.addCommand(new IncrementalCommand() {
+                public boolean execute() {
+                    final Delta delta = (Delta)deltsIter.next();
+                    if (delta instanceof DeleteDelta) {
+                        final DeleteDelta deleteDelta = (DeleteDelta)delta;
+                        final Chunk original = deleteDelta.getOriginal();
+                        final Chunk revised = deleteDelta.getRevised();
+                        //GWT.log("D: " + revised.first() + "," + (revised.first() + original.size()), null);
+                        fireListEvent(ListEvent.createRemoved(PrescriptedMessageList.this, revised.first(), revised.first() + original.size()));
+                    } else if (delta instanceof ChangeDelta) {
+                        final ChangeDelta changeDelta = (ChangeDelta)delta;
+                        final Chunk original = changeDelta.getOriginal();
+                        final Chunk revised = changeDelta.getRevised();
+                        if (original.size() == revised.size()) {
+                            //GWT.log("C: " + revised.first() + "," + (revised.first() + original.size()), null);
+                            fireListEvent(ListEvent.createChanged(PrescriptedMessageList.this, revised.first(), revised.first() + revised.size()));
+                        } else {
+                            //GWT.log("D: " + revised.first() + "," + (revised.first() + original.size()), null);
+                            fireListEvent(ListEvent.createRemoved(PrescriptedMessageList.this, revised.first(), revised.first() + original.size()));
+                            //GWT.log("A: " + revised.first() + "," + (revised.first() + revised.size()), null);
+                            fireListEvent(ListEvent.createAdded(PrescriptedMessageList.this, revised.first(), revised.first() + revised.size()));
+                        }
+                    } else if (delta instanceof AddDelta) {
+                        final AddDelta addDelta = (AddDelta)delta;
+                        final Chunk original = addDelta.getOriginal();
+                        final Chunk revised = addDelta.getRevised();
+                        //GWT.log("A: " + revised.first() + "," + (revised.first() + revised.size()), null);
+                        fireListEvent(ListEvent.createAdded(PrescriptedMessageList.this, revised.first(), revised.first() + revised.size()));
+                    }
+
+                    return deltsIter.hasNext();
                 }
-            } else if (delta instanceof AddDelta) {
-                final AddDelta addDelta = (AddDelta)delta;
-                final Chunk original = addDelta.getOriginal();
-                final Chunk revised = addDelta.getRevised();
-                //GWT.log("A: " + revised.first() + "," + (revised.first() + revised.size()), null);
-                fireListEvent(ListEvent.createAdded(this, revised.first(), revised.first() + revised.size()));
-            }
+            });
         }
     }
 

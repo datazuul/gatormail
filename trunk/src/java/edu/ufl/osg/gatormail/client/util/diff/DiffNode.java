@@ -76,139 +76,44 @@
 
 package edu.ufl.osg.gatormail.client.util.diff;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 /**
- * A Revision holds the series of deltas that describe the differences between
- * two sequences.
+ * A diffnode in a diffpath.
+ * <p/>
+ * A DiffNode and its previous node mark a delta between two input sequences,
+ * that is, two differing subsequences between (possibly zero length) matching
+ * sequences.
+ * <p/>
+ * {@link DiffNode DiffNodes} and {@link Snake Snakes} allow for compression of
+ * diffpaths, as each snake is represented by a single {@link Snake Snake} node
+ * and each contiguous series of insertions and deletions is represented by a
+ * single {@link DiffNode DiffNodes}.
  *
  * @author <a href="mailto:juanco@suigeneris.org">Juanco Anez</a>
- * @author <a href="mailto:bwm@hplb.hpl.hp.com">Brian McBride</a>
  * @version $Revision: 1.1 $ $Date: 2006/03/12 00:24:21 $
- * @see Delta
- * @see Diff
- * @see Chunk
  */
-public final class Revision extends ToString {
-
-    private List/*<Delta>*/ deltas = new ArrayList/*<Delta>*/();
-
+public final class DiffNode extends PathNode {
     /**
-     * Creates an empty Revision.
+     * Constructs a DiffNode.
+     * <p/>
+     * DiffNodes are compressed. That means that the path pointed to by the
+     * <code>prev</code> parameter will be followed using
+     * {@link PathNode#previousSnake} until a non-diff node is found.
+     *
+     * @param the  position in the original sequence
+     * @param the  position in the revised sequence
+     * @param prev the previous node in the path.
      */
-    public Revision() {
+    public DiffNode(final int i, final int j, final PathNode prev) {
+        super(i, j, (prev == null ? null : prev.previousSnake()));
     }
 
     /**
-     * Adds a delta to this revision.
+     * {@inheritDoc}
      *
-     * @param delta the {@link Delta Delta} to add.
+     * @return false, always
      */
-    public synchronized void addDelta(final Delta delta) {
-        if (delta == null) {
-            throw new IllegalArgumentException("new delta is null");
-        }
-        deltas.add(delta);
-    }
-
-    /**
-     * Adds a delta to the start of this revision.
-     *
-     * @param delta the {@link Delta Delta} to add.
-     */
-    public synchronized void insertDelta(final Delta delta) {
-        if (delta == null) {
-            throw new IllegalArgumentException("new delta is null");
-        }
-        deltas.add(0, delta);
-    }
-
-    /**
-     * Retrieves a delta from this revision by position.
-     *
-     * @param i the position of the delta to retrieve.
-     * @return the specified delta
-     */
-    public Delta getDelta(final int i) {
-        return (Delta)deltas.get(i);
-    }
-
-    /**
-     * An Iterator of {@link Delta}s.
-     *
-     * @return an Iterator of {@link Delta}s.
-     */
-    public Iterator/*<Delta>*/ iterator() {
-        return deltas.iterator();
-    }
-
-    /**
-     * Returns the number of deltas in this revision.
-     *
-     * @return the number of deltas.
-     */
-    public int size() {
-        return deltas.size();
-    }
-
-    /**
-     * Applies the series of deltas in this revision as patches to the given
-     * text.
-     *
-     * @param src the text to patch, which the method doesn't change.
-     * @return the resulting text after the patches have been applied.
-     * @throws PatchFailedException if any of the patches cannot be applied.
-     */
-    public Object[] patch(final Object[] src) throws PatchFailedException {
-        final List target = new ArrayList(Arrays.asList(src));
-        applyTo(target);
-        return target.toArray();
-    }
-
-    /**
-     * Applies the series of deltas in this revision as patches to the given
-     * text.
-     *
-     * @param target the text to patch.
-     * @throws PatchFailedException if any of the patches cannot be applied.
-     */
-    public synchronized void applyTo(final List target) throws PatchFailedException {
-        final ListIterator i = deltas.listIterator(deltas.size());
-        while (i.hasPrevious()) {
-            final Delta delta = (Delta)i.previous();
-            delta.patch(target);
-        }
-    }
-
-    /**
-     * Converts this revision into its Unix diff style string representation.
-     *
-     * @param s a {@link StringBuffer StringBuffer} to which the string
-     *          representation will be appended.
-     */
-    public synchronized void toString(final StringBuffer s) {
-        final Iterator i = deltas.iterator();
-        while (i.hasNext()) {
-            ((Delta)i.next()).toString(s);
-        }
-    }
-
-    /**
-     * Accepts a visitor.
-     *
-     * @param visitor the {@link RevisionVisitor} visiting this instance
-     */
-    public void accept(final RevisionVisitor visitor) {
-        visitor.visit(this);
-        final Iterator iter = deltas.iterator();
-        while (iter.hasNext()) {
-            ((Delta)iter.next()).accept(visitor);
-        }
+    public boolean isSnake() {
+        return false;
     }
 
 }

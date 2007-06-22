@@ -43,11 +43,9 @@ import com.google.gwt.user.client.ui.TabListener;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import edu.ufl.osg.gatormail.client.GatorMailWidget;
-import edu.ufl.osg.gatormail.client.model.GMAddress;
 import edu.ufl.osg.gatormail.client.model.GMFlags;
 import edu.ufl.osg.gatormail.client.model.GMFolder;
 import edu.ufl.osg.gatormail.client.model.message.GMMessage;
-import edu.ufl.osg.gatormail.client.model.message.GMMessageHeaders;
 import edu.ufl.osg.gatormail.client.services.MessageService;
 import edu.ufl.osg.gatormail.client.services.MessageServiceAsync;
 import edu.ufl.osg.gatormail.client.ui.FlaggedLabel;
@@ -58,7 +56,6 @@ import edu.ufl.osg.gatormail.client.ui.SelectionCheckBox;
 import edu.ufl.osg.gatormail.client.ui.SubjectLabel;
 import org.mcarthur.sandy.gwt.event.list.client.EventList;
 import org.mcarthur.sandy.gwt.event.list.client.EventLists;
-import org.mcarthur.sandy.gwt.event.list.client.FilteredEventList;
 import org.mcarthur.sandy.gwt.event.list.client.ListEvent;
 import org.mcarthur.sandy.gwt.event.list.client.ListEventListener;
 import org.mcarthur.sandy.gwt.event.list.client.RangedEventList;
@@ -101,8 +98,6 @@ public final class MessageList extends Composite {
 
     private final MessageCache messageCache;
     private final PrescriptedMessageList/*<GMMessage>*/ messages;
-    private final EventList/*<GMMessage>*/ messagesReversed;
-    private final FilteredEventList/*<GMMessage>*/ messagesFiltered;
     private final RangedEventList/*<GMMessage>*/ messagesPaged;
     private final EventList/*<GMMessage>*/ messagesView;
 
@@ -115,9 +110,7 @@ public final class MessageList extends Composite {
 
         messageCache = new MessageCache(client, gmFolder);
         messages = new PrescriptedMessageList(client.getAccount(), gmFolder, messageCache);
-        messagesReversed = EventLists.reverseEventList(messages);
-        messagesFiltered = EventLists.filteredEventList(messagesReversed);
-        messagesPaged = EventLists.rangedEventList(messagesFiltered, 25);
+        messagesPaged = EventLists.rangedEventList(messages, 25);
         messagesView = messagesPaged;
         selectedMessagesListener = new SelectedMessagesListEventLisener();
 
@@ -313,26 +306,26 @@ public final class MessageList extends Composite {
 
         final MenuBar showMenu = new MenuBar();
         final MenuBar showMenuPopup = new MenuBar(true);
-        showMenuPopup.addItem("All", new AllFilterCommand());
+        showMenuPopup.addItem("All", NOT_IMPLEMENTED_COMMAND);
 
         final MenuBar flaggedMenuPopup = new MenuBar(true);
-        flaggedMenuPopup.addItem("Flagged", new HasFlagFilterCommand(GMFlags.GMFlag.FLAGGED));
-        flaggedMenuPopup.addItem("Not Flagged", new NotFlagFilterCommand(GMFlags.GMFlag.FLAGGED));
+        flaggedMenuPopup.addItem("Flagged", NOT_IMPLEMENTED_COMMAND);
+        flaggedMenuPopup.addItem("Not Flagged", NOT_IMPLEMENTED_COMMAND);
         showMenuPopup.addItem("Flagged", flaggedMenuPopup);
 
-        showMenuPopup.addItem("Unread", new NotFlagFilterCommand(GMFlags.GMFlag.SEEN));
-        showMenuPopup.addItem("Read", new HasFlagFilterCommand(GMFlags.GMFlag.SEEN));
+        showMenuPopup.addItem("Unread", NOT_IMPLEMENTED_COMMAND);
+        showMenuPopup.addItem("Read", NOT_IMPLEMENTED_COMMAND);
 
         showMenuPopup.addItem("From", createFromMenuPopup());
 
         final MenuBar toMenuPopup = new MenuBar(true);
-        toMenuPopup.addItem("To: me", new ToMeFilterCommand());
-        toMenuPopup.addItem("To, CC: me", new ToCcMeFilterCommand());
-        toMenuPopup.addItem("Not me", new NotToCcMeFilterCommand());
+        toMenuPopup.addItem("To: me", NOT_IMPLEMENTED_COMMAND);
+        toMenuPopup.addItem("To, CC: me", NOT_IMPLEMENTED_COMMAND);
+        toMenuPopup.addItem("Not me", NOT_IMPLEMENTED_COMMAND);
         toMenuPopup.addItem("Someone Else...", NOT_IMPLEMENTED_COMMAND);
         showMenuPopup.addItem("To", toMenuPopup);
 
-        showMenuPopup.addItem("Deleted", new HasFlagFilterCommand(GMFlags.GMFlag.DELETED));
+        showMenuPopup.addItem("Deleted", NOT_IMPLEMENTED_COMMAND);
 
         //showMenu.addItem("[Pick one]", showMenuPopup);
         showMenu.addItem(new CurrentFilterMenuItem(messages, showMenuPopup));
@@ -820,123 +813,6 @@ public final class MessageList extends Composite {
             if (message.getSummary() == null) {
                 MessageService.App.fetchMessagePart(client.getAccount(), message, MessageService.MessagePart.SUMMARY);
             }
-        }
-    }
-
-    private class AllFilterCommand implements Command {
-        public void execute() {
-            DeferredCommand.addCommand(new Command() {
-                public void execute() {
-                    messagesFiltered.setFilter(null);
-                }
-            });
-        }
-    }
-
-    private class HasFlagFilterCommand implements Command {
-        private final GMFlags.GMFlag flag;
-
-        public HasFlagFilterCommand(final GMFlags.GMFlag flag) {
-            this.flag = flag;
-        }
-
-        public final void execute() {
-            DeferredCommand.addCommand(new Command() {
-                public void execute() {
-                    messagesFiltered.setFilter(new FilteredEventList.Filter() {
-                        public boolean accept(final Object element) {
-                            final GMMessage message = (GMMessage)element;
-                            if (message.getFlags() != null) {
-                                return acceptFlags(message.getFlags());
-                            } else {
-                                // TODO: fetch Flag info
-                                return true;
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        protected boolean acceptFlags(final GMFlags flags) {
-            return flags.contains(flag);
-        }
-    }
-
-    private class NotFlagFilterCommand extends MessageList.HasFlagFilterCommand {
-        public NotFlagFilterCommand(final GMFlags.GMFlag flag) {
-            super(flag);
-        }
-
-        protected boolean acceptFlags(final GMFlags flags) {
-            return !super.acceptFlags(flags);
-        }
-    }
-
-    private class ToMeFilterCommand implements Command {
-        public void execute() {
-            DeferredCommand.addCommand(new Command() {
-                public void execute() {
-                    messagesFiltered.setFilter(new FilteredEventList.Filter() {
-                        public boolean accept(final Object element) {
-                            final GMMessage message = (GMMessage)element;
-                            final GMMessageHeaders messageHeaders = message.getHeaders();
-                            if (messageHeaders != null) {
-                                return checkHeaders(messageHeaders);
-                            } else {
-                                // TODO: fetch headers
-                                // keep in list for now.
-                                return true;
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        /**
-         * Return true when the message is To: me.
-         */
-        protected boolean checkHeaders(final GMMessageHeaders messageHeaders) {
-            final GMAddress[] tos = messageHeaders.getTo();
-            if (tos != null) {
-                for (int i=0; i < tos.length; i++) {
-                    if (client.isMe(tos[i])) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    private class ToCcMeFilterCommand extends ToMeFilterCommand {
-        /**
-         * Return true when the message is To: me or CC: me.
-         */
-        protected boolean checkHeaders(final GMMessageHeaders messageHeaders) {
-            boolean toMe = super.checkHeaders(messageHeaders);
-            if (!toMe) {
-                final GMAddress[] ccs = messageHeaders.getCc();
-                if (ccs != null) {
-                    for (int i=0; i < ccs.length; i++) {
-                        if (client.isMe(ccs[i])) {
-                            toMe = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            return toMe;
-        }
-    }
-
-    private class NotToCcMeFilterCommand extends ToCcMeFilterCommand {
-        /**
-         * Return true when the message is not To: me or not CC: me.
-         */
-        protected boolean checkHeaders(final GMMessageHeaders messageHeaders) {
-            return !super.checkHeaders(messageHeaders);
         }
     }
 

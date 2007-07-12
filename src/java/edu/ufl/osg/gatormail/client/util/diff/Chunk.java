@@ -76,6 +76,7 @@
 
 package edu.ufl.osg.gatormail.client.util.diff;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -90,7 +91,7 @@ import java.util.List;
  * @see Diff
  * @see Delta
  */
-public class Chunk extends ToString {
+public class Chunk extends ToString implements Serializable {
 
     protected int anchor;
 

@@ -77,6 +77,7 @@
 package edu.ufl.osg.gatormail.client.util.diff;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -94,8 +95,11 @@ import java.util.ListIterator;
  * @see Diff
  * @see Chunk
  */
-public final class Revision extends ToString {
+public final class Revision extends ToString implements Serializable {
 
+    /**
+     * @gwt.typeArgs <edu.ufl.osg.gatormail.client.util.diff.Delta>
+     */
     private List/*<Delta>*/ deltas = new ArrayList/*<Delta>*/();
 
     /**

@@ -74,16 +74,6 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
             gmFolder.setParentFullName(parentFolder.getFullName());
         }
 
-        if (folder instanceof UIDFolder) {
-            final UIDFolder uidFolder = (UIDFolder)folder;
-            try {
-                gmFolder.setUidValidity(uidFolder.getUIDValidity());
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                //throw new SerializableException(e.getMessage());
-            }
-        }
-
         try {
             if (!folder.exists()) {
                 throw new SerializableException("Folder " + gmFolder + " does not exist!");
@@ -100,14 +90,20 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
             e.printStackTrace();
             throw new SerializableException(e.getMessage());
         }
+
+        gmFolder.setType(type);
         gmFolder.setHoldsFolders((type & IMAPFolder.HOLDS_FOLDERS) != 0);
         gmFolder.setHoldsMessages((type & IMAPFolder.HOLDS_MESSAGES) != 0);
 
-        try {
-            gmFolder.setType(folder.getType());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            throw new SerializableException(e.getMessage());
+        if (gmFolder.isHoldsMessages() && folder instanceof UIDFolder) {
+            final UIDFolder uidFolder = (UIDFolder)folder;
+            try {
+                gmFolder.setUidValidity(uidFolder.getUIDValidity());
+            } catch (MessagingException e) {
+                System.err.println("MessagingException for " + uidFolder);
+                e.printStackTrace();
+                //throw new SerializableException(e.getMessage());
+            }
         }
 
         try {
@@ -118,7 +114,7 @@ public class FoldersServiceImpl extends RemoteServiceServlet implements FoldersS
         }
 
         try {
-            for (final javax.mail.Folder subFolder : folder.list()) {
+            for (final Folder subFolder : folder.list()) {
                 gmFolder.addSubFolderName(subFolder.getFullName());
             }
             // helps minimize UI updates on the client side

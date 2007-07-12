@@ -76,6 +76,7 @@
 
 package edu.ufl.osg.gatormail.client.util.diff;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -96,7 +97,7 @@ import java.util.List;
  *      accept() method
  */
 
-public abstract class Delta extends ToString {
+public abstract class Delta extends ToString implements Serializable {
 
     protected Chunk original;
 

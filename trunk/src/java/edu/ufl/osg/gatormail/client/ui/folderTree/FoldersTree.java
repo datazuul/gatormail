@@ -83,7 +83,7 @@ public class FoldersTree extends Tree {
                     }
                 }
                 public void onFailure(final Throwable caught) {
-                    GWT.log("Error fetching Root Folders ", caught);
+                    GWT.log("Error fetching Root Folders ", new RuntimeException(caught));
                 }
             });
         }

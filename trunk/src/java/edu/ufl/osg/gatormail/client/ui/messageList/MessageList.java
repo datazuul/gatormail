@@ -195,7 +195,7 @@ public final class MessageList extends Composite {
                         }
 
                         public void onFailure(final Throwable caught) {
-                            GWT.log("Failed to delete messages.", caught);
+                            GWT.log("Failed to delete messages.", new RuntimeException(caught));
                         }
                     });
                 }
@@ -224,7 +224,7 @@ public final class MessageList extends Composite {
                         }
 
                         public void onFailure(final Throwable caught) {
-                            GWT.log("Failed to delete messages forever.", caught);
+                            GWT.log("Failed to delete messages forever.", new RuntimeException(caught));
                         }
                     });
                 }
@@ -254,7 +254,7 @@ public final class MessageList extends Composite {
                         }
 
                         public void onFailure(final Throwable caught) {
-                            GWT.log("Failed to report messages as spam.", caught);
+                            GWT.log("Failed to report messages as spam.", new RuntimeException(caught));
                         }
                     });
                 }
@@ -282,7 +282,7 @@ public final class MessageList extends Composite {
                         }
 
                         public void onFailure(final Throwable caught) {
-                            GWT.log("Failed to report messages as spam.", caught);
+                            GWT.log("Failed to report messages as spam.", new RuntimeException(caught));
                         }
                     });
                 }

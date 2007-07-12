@@ -111,7 +111,7 @@ final class PrescriptedMessageList extends AbstractEventList implements EventLis
             }
 
             public void onFailure(final Throwable caught) {
-                GWT.log("Failed to update UIDs", caught);
+                GWT.log("Failed to update UIDs", new RuntimeException(caught));
             }
         });
     }

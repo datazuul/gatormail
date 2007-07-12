@@ -323,7 +323,7 @@ public interface MessageService extends RemoteService {
                                 update.applyUpdate(message);
                             }
                             public void onFailure(final Throwable caught) {
-                                GWT.log("Problem fetching parts " + parts, caught);
+                                GWT.log("Problem fetching parts " + parts, new RuntimeException(caught));
                             }
                         });
                     }

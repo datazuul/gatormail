@@ -100,7 +100,7 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 }
             }
             public void onFailure(final Throwable caught) {
-                GWT.log("Auto login failed", caught);
+                GWT.log("Auto login failed", new RuntimeException(caught));
             }
         });
 
@@ -139,7 +139,7 @@ public final class GatorMailWidget extends Composite implements HistoryListener,
                 folder.applyUpdate(f);
             }
             public void onFailure(final Throwable caught) {
-                GWT.log("Problem updating info for: " + folder, caught);
+                GWT.log("Problem updating info for: " + folder, new RuntimeException(caught));
             }
         });
     }

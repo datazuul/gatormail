@@ -100,7 +100,7 @@ public class FoldersSummaryPanel extends Composite {
                 }
             }
             public void onFailure(final Throwable caught) {
-                GWT.log("Error fetching Root Folders for " + account, caught);
+                GWT.log("Error fetching Root Folders for " + account, new RuntimeException(caught));
             }
         });
     }
